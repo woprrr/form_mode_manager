@@ -8,9 +8,8 @@
 namespace Drupal\form_mode_manager\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\media_entity\MediaBundleInterface;
 use Drupal\node\NodeTypeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -21,30 +20,20 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class FormModeManagerController extends ControllerBase implements ContainerInjectionInterface {
 
   /**
-   * The date formatter service.
+   * The entity type manager service.
    *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface;
    */
-  protected $dateFormatter;
+  protected $entityTypeManager;
 
   /**
-   * The renderer service.
+   * Constructs a FormModeManagerController object.
    *
-   * @var \Drupal\Core\Render\RendererInterface
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   Entity type manager service.
    */
-  protected $renderer;
-
-  /**
-   * Constructs a NodeController object.
-   *
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
-   *   The date formatter service.
-   * @param \Drupal\Core\Render\RendererInterface $renderer
-   *   The renderer service.
-   */
-  public function __construct(DateFormatterInterface $date_formatter, RendererInterface $renderer) {
-    $this->dateFormatter = $date_formatter;
-    $this->renderer = $renderer;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -52,8 +41,7 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('date.formatter'),
-      $container->get('renderer')
+      $container->get('entity_type.manager')
     );
   }
 
@@ -68,10 +56,9 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
    */
   public function nodeAdd(NodeTypeInterface $node_type, $form_display) {
     $form_class = str_replace('-', '_', $form_display);
-    // @TODO change entityManager() to entityTypeManager().
-    $node = $this->entityManager()->getStorage('node')->create(array(
+    $node = $this->entityTypeManager->getStorage('node')->create([
       'type' => $node_type->id(),
-    ));
+    ]);
 
     $form = $this->entityFormBuilder()->getForm($node, $form_class);
 
@@ -91,13 +78,12 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
     $user = \Drupal::currentUser();
     $form_class = str_replace('-', '_', $form_display);
     $bundle = $media_bundle->id();
-    $langcode = $this->moduleHandler()->invoke('language', 'get_default_langcode', array('media', $bundle));
-    // @TODO change entityManager() to entityTypeManager().
-    $media = $this->entityManager()->getStorage('media')->create(array(
+    $langcode = $this->moduleHandler()->invoke('language', 'get_default_langcode', ['media', $bundle]);
+    $media = $this->entityTypeManager->getStorage('media')->create([
       'uid' => $user->id(),
       'bundle' => $bundle,
       'langcode' => $langcode ? $langcode : $this->languageManager->getDefaultLanguage()->getId(),
-    ));
+    ]);
 
     return $this->entityFormBuilder()->getForm($media, $form_class);
   }
@@ -111,7 +97,7 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
    *   The page title.
    */
   public function addPageTitle(NodeTypeInterface $node_type) {
-    return $this->t('Create @name', array('@name' => $node_type->label()));
+    return $this->t('Create @name', ['@name' => $node_type->label()]);
   }
 
 }

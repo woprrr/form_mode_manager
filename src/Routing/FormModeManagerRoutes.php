@@ -7,7 +7,7 @@
 
 namespace Drupal\form_mode_manager\Routing;
 
-use Drupal\Core\Entity\EntityManager;
+use Drupal\Core\Entity\EntityDisplayRepository;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Route;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -18,27 +18,25 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 class FormModeManagerRoutes implements ContainerInjectionInterface {
 
   /**
-   * The entity manager service.
+   * The renderer service.
    *
-   * @var \Drupal\Core\Entity\EntityManager
+   * @var \Drupal\Core\Entity\EntityDisplayRepository
    */
-  protected $entityManager;
+  protected $formModes;
 
   /**
    * Constructor.
    */
-  public function __construct(EntityManager $entity_manager) {
-    // @TODO change entityManager() to entityTypeManager().
-    $this->entityManager = $entity_manager;
+  public function __construct(EntityDisplayRepository $entity_display) {
+    $this->formModes = $entity_display->getAllFormModes();
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    // @TODO change entityManager() to entityTypeManager().
     return new static(
-      $container->get('entity.manager')
+      $container->get('entity_display.repository')
     );
   }
 
@@ -47,9 +45,7 @@ class FormModeManagerRoutes implements ContainerInjectionInterface {
    */
   public function routes() {
     $routes = [];
-    // @TODO change entityManager() to entityTypeManager() and use injection.
-    $form_modes = \Drupal::entityManager()->getAllFormModes();
-    foreach ($form_modes as $entity_type => $display_modes) {
+    foreach ($this->formModes as $entity_type => $display_modes) {
       foreach ($display_modes as $key => $display_mode) {
         if ($key != 'register') {
           // Returns an array of Route objects.

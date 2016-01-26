@@ -11,8 +11,7 @@ use Drupal\Core\Render\Element;
  * Implements hook_entity_type_build().
  */
 function form_mode_manager_entity_type_build(array &$entity_types) {
-  // @TODO change entityManager() to entityTypeManager().
-  $form_modes = \Drupal::entityManager()->getAllFormModes();
+  $form_modes = \Drupal::service('entity_display.repository')->getAllFormModes();
   foreach ($form_modes as $entity_type => $display_modes) {
     /* @var \Drupal\Core\Entity\EntityTypeInterface $entity */
     $entity = $entity_types[$entity_type];
@@ -31,9 +30,7 @@ function form_mode_manager_entity_type_build(array &$entity_types) {
  */
 function form_mode_manager_entity_operation(\Drupal\Core\Entity\EntityInterface $entity) {
   $operations = [];
-  // @TODO change entityManager() to entityTypeManager().
-  $form_modes = \Drupal::entityManager()->getAllFormModes();
-
+  $form_modes = \Drupal::service('entity_display.repository')->getAllFormModes();
   foreach ($form_modes as $entity_type => $display_modes) {
     foreach ($display_modes as $key => $display_mode) {
       if($key != 'register') {
