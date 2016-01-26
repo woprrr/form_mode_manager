@@ -1,0 +1,54 @@
+<?php
+
+/**
+ * @file
+ * Contains form_mode_manager.module.
+ */
+
+use Drupal\Core\Render\Element;
+
+/**
+ * Implements hook_entity_type_build().
+ */
+function form_mode_manager_entity_type_build(array &$entity_types) {
+  // @TODO change entityManager() to entityTypeManager().
+  $form_modes = \Drupal::entityManager()->getAllFormModes();
+  foreach ($form_modes as $entity_type => $display_modes) {
+    /* @var \Drupal\Core\Entity\EntityTypeInterface $entity */
+    $entity = $entity_types[$entity_type];
+    foreach ($display_modes as $key => $display_mode) {
+      if ($key != 'register') {
+        $entity->setFormClass($key, 'Drupal\Core\Entity\ContentEntityForm')
+          ->setLinkTemplate($display_mode['label'], '/' . $entity_type . '/{' . $entity_type . '}/' . $display_mode['label']);
+      }
+    }
+  }
+
+}
+
+/**
+ * Implements hook_entity_operation().
+ */
+function form_mode_manager_entity_operation(\Drupal\Core\Entity\EntityInterface $entity) {
+  $operations = [];
+  // @TODO change entityManager() to entityTypeManager().
+  $form_modes = \Drupal::entityManager()->getAllFormModes();
+
+  foreach ($form_modes as $entity_type => $display_modes) {
+    foreach ($display_modes as $key => $display_mode) {
+      if($key != 'register') {
+        if ($entity->getEntityTypeId() === $entity_type) {
+          $operations += [
+            $display_mode['label'] => [
+              'title' => t('Edit as @label', ['@label' => $display_mode['label']])->render(),
+              'url' => $entity->urlInfo($display_mode['label']),
+              'weight' => 0,
+            ],
+          ];
+        }
+      }
+    }
+  }
+
+  return $operations;
+}

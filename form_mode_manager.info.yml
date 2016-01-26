@@ -1,0 +1,6 @@
+name: Form Mode Manager
+description: 'Allow use of form mode for entities.'
+type: module
+core: 8.x
+dependencies:
+  - node

@@ -1,0 +1,2 @@
+route_callbacks:
+  - '\Drupal\form_mode_manager\Routing\FormModeManagerRoutes::routes'
