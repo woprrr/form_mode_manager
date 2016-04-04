@@ -6,30 +6,25 @@
  */
 
 use Drupal\Core\Render\Element;
-use Drupal\Core\Cache\Cache;
 
 /**
- * Implements hook_entity_type_build().
+ * Implements hook_entity_type_alter().
  */
-function form_mode_manager_entity_type_build(array &$entity_types) {
-  $tags = [];
-  $form_modes = \Drupal::service('entity_display.repository')
-    ->getAllFormModes();
-  foreach ($form_modes as $entity_type => $display_modes) {
-    /** @var \Drupal\Core\Entity\ContentEntityType $entity */
-    $entity = $entity_types[$entity_type];
-    if (isset($entity) && $entity instanceof Drupal\Core\Entity\ContentEntityType) {
+function form_mode_manager_entity_type_alter(array &$entity_types) {
+  /** @var \Drupal\Core\Entity\EntityDisplayRepository $entity_display */
+  $entity_display = \Drupal::service('entity_display.repository');
+  /* @var \Drupal\Core\Entity\EntityTypeInterface $entity */
+  foreach ($entity_types as $entity_type => $entity) {
       // @TODO Purpose possibility to handle that to define a custom entity FormClass.
       $default_handler_class = $entity->getHandlerClasses()['form']['default'];
-      foreach ($display_modes as $key => $display_mode) {
-        if (!isset($display_mode['_core']) && !$entity->hasLinkTemplate($key)) {
-          $entity->setFormClass($key, $default_handler_class)->setLinkTemplate($key, '/' . $entity_type . '/{' . $entity_type . '}/' . $key);
-          $tags[] = $entity->getListCacheTags();
+      $display_modes = $entity_display->getFormModes($entity_type);
+      foreach ($display_modes as $machine_name => $display_mode) {
+        if (!isset($display_mode['_core'])) {
+          $entity->setFormClass($machine_name, $default_handler_class)
+            ->setLinkTemplate($machine_name, '/' . $entity_type . '/{' . $entity_type . '}/' . $machine_name);
         }
       }
     }
-  }
-  Cache::invalidateTags($tags);
 }
 
 /**
