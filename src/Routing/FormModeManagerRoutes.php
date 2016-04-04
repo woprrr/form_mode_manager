@@ -48,10 +48,10 @@ class FormModeManagerRoutes implements ContainerInjectionInterface {
     foreach ($this->formModes as $entity_type => $display_modes) {
       foreach ($display_modes as $key => $display_mode) {
         if ($key != 'register') {
-          // Returns an array of Route objects.
+          // Returns array with Route objects.
           $routes['entity.' . $display_mode['id']] = new Route(
           // Path to attach this route to:
-            '/' . $display_mode['targetEntityType'] . '/{' . $display_mode['targetEntityType'] . '}/' . $display_mode['label'],
+            '/' . $display_mode['targetEntityType'] . '/{' . $display_mode['targetEntityType'] . '}/' . $key,
             // Route defaults:
             [
               '_entity_form' => $display_mode['id'],
@@ -60,12 +60,11 @@ class FormModeManagerRoutes implements ContainerInjectionInterface {
             // Route requirements:
             [
               '_permission'  => 'administer nodes',
-            ],
-            [
-              '_node_operation_route' => TRUE
             ]
           );
-          // @TODO Found an solution to use same methods for all entities.
+          // @TODO Found an solution to use same methods for all entities ATM we need to declare differents
+          // _controller by entity because the parameters passed to controler be same name to path
+          // eg : {node_type} in path the argument passed to controler is $node_type and nothing other .
           if ($display_mode['targetEntityType'] === 'node') {
             $routes[$display_mode['targetEntityType'] . '.add.' . $key] = new Route(
             // Path to attach this route to:
@@ -88,7 +87,7 @@ class FormModeManagerRoutes implements ContainerInjectionInterface {
           if ($display_mode['targetEntityType'] === 'media') {
             $routes[$display_mode['targetEntityType'] . '.add.' . $key] = new Route(
             // Path to attach this route to:
-              '/' . $display_mode['targetEntityType'] . '/add/{media_bundle}/' . $display_mode['label'],
+              '/' . $display_mode['targetEntityType'] . '/add/{media_bundle}/' . $key,
               // Route defaults:
               [
                 '_controller' => '\Drupal\form_mode_manager\Controller\FormModeManagerController::mediaAdd',

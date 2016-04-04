@@ -6,23 +6,30 @@
  */
 
 use Drupal\Core\Render\Element;
+use Drupal\Core\Cache\Cache;
 
 /**
  * Implements hook_entity_type_build().
  */
 function form_mode_manager_entity_type_build(array &$entity_types) {
-  $form_modes = \Drupal::service('entity_display.repository')->getAllFormModes();
+  $tags = [];
+  $form_modes = \Drupal::service('entity_display.repository')
+    ->getAllFormModes();
   foreach ($form_modes as $entity_type => $display_modes) {
-    /* @var \Drupal\Core\Entity\EntityTypeInterface $entity */
+    /** @var \Drupal\Core\Entity\ContentEntityType $entity */
     $entity = $entity_types[$entity_type];
-    foreach ($display_modes as $key => $display_mode) {
-      if ($key != 'register') {
-        $entity->setFormClass($key, 'Drupal\Core\Entity\ContentEntityForm')
-          ->setLinkTemplate($display_mode['label'], '/' . $entity_type . '/{' . $entity_type . '}/' . $display_mode['label']);
+    if (isset($entity) && $entity instanceof Drupal\Core\Entity\ContentEntityType) {
+      // @TODO Purpose possibility to handle that to define a custom entity FormClass.
+      $default_handler_class = $entity->getHandlerClasses()['form']['default'];
+      foreach ($display_modes as $key => $display_mode) {
+        if (!isset($display_mode['_core']) && !$entity->hasLinkTemplate($key)) {
+          $entity->setFormClass($key, $default_handler_class)->setLinkTemplate($key, '/' . $entity_type . '/{' . $entity_type . '}/' . $key);
+          $tags[] = $entity->getListCacheTags();
+        }
       }
     }
   }
-
+  Cache::invalidateTags($tags);
 }
 
 /**
@@ -33,12 +40,12 @@ function form_mode_manager_entity_operation(\Drupal\Core\Entity\EntityInterface 
   $form_modes = \Drupal::service('entity_display.repository')->getAllFormModes();
   foreach ($form_modes as $entity_type => $display_modes) {
     foreach ($display_modes as $key => $display_mode) {
-      if($key != 'register') {
+      if(!isset($display_mode['_core'])) {
         if ($entity->getEntityTypeId() === $entity_type) {
           $operations += [
-            $display_mode['label'] => [
+            $key => [
               'title' => t('Edit as @label', ['@label' => $display_mode['label']])->render(),
-              'url' => $entity->urlInfo($display_mode['label']),
+              'url' => $entity->toUrl($key),
               'weight' => 0,
             ],
           ];
