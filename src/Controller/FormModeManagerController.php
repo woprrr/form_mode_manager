@@ -50,14 +50,18 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
    *
    * @param \Drupal\node\NodeTypeInterface $node_type
    *   The node type entity for the node.
+   * @param string $form_display
+   *   The operation identifying the form variation (form_mode),
+   *   to be returned.
    *
    * @return array
    *   A node submission form.
    */
   public function nodeAdd(NodeTypeInterface $node_type, $form_display) {
+    // Transliterate the eventual caracters '-' to '_'.
     $form_class = str_replace('-', '_', $form_display);
     $node = $this->entityTypeManager->getStorage('node')->create([
-      'type' => $node_type->id(),
+      'type' => $node_type,
     ]);
 
     $form = $this->entityFormBuilder()->getForm($node, $form_class);
@@ -68,14 +72,18 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
   /**
    * Provides the node submission form.
    *
-   * @param MediaBundleInterface $node_type
+   * @param MediaBundleInterface $media_bundle
    *   The node type entity for the node.
+   * @param string $form_display
+   *   The operation identifying the form variation (form_mode),
+   *   to be returned.
    *
    * @return array
    *   A node submission form.
    */
   public function mediaAdd(MediaBundleInterface $media_bundle, $form_display) {
     $user = \Drupal::currentUser();
+    // Transliterate the eventual caracters '-' to '_'.
     $form_class = str_replace('-', '_', $form_display);
     $bundle = $media_bundle->id();
     $langcode = $this->moduleHandler()->invoke('language', 'get_default_langcode', ['media', $bundle]);

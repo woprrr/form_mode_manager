@@ -1,6 +1,7 @@
 name: Form Mode Manager
-description: 'Allow use of form mode for entities.'
+description: 'Allow use of form mode in all entities'
 type: module
 core: 8.x
 dependencies:
-  - node
+  - field
+  - field_ui

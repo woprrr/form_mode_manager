@@ -28,7 +28,7 @@ class FormModeManagerRoutes implements ContainerInjectionInterface {
    * Constructor.
    */
   public function __construct(EntityDisplayRepository $entity_display) {
-    $this->formModes = $entity_display->getAllFormModes();
+    $this->formModes = $entity_display;
   }
 
   /**
@@ -41,11 +41,14 @@ class FormModeManagerRoutes implements ContainerInjectionInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Returns an array of route objects.
+   *
+   * @return \Symfony\Component\Routing\Route[]
+   *   An array of route objects.
    */
   public function routes() {
     $routes = [];
-    foreach ($this->formModes as $entity_type => $display_modes) {
+    foreach ($this->formModes->getAllFormModes() as $entity_type => $display_modes) {
       foreach ($display_modes as $key => $display_mode) {
         if ($key != 'register') {
           // Returns array with Route objects.
@@ -59,12 +62,14 @@ class FormModeManagerRoutes implements ContainerInjectionInterface {
             ],
             // Route requirements:
             [
-              '_permission'  => 'administer nodes',
+              '_permission'  => 'access content',
             ]
           );
-          // @TODO Found an solution to use same methods for all entities ATM we need to declare differents
-          // _controller by entity because the parameters passed to controler be same name to path
-          // eg : {node_type} in path the argument passed to controler is $node_type and nothing other .
+          // @TODO Found an solution to use same methods for all entities ATM,
+          // we need to declare differents _controller by entity because,
+          // the parameters, passed to controler, be same name to path,
+          // eg : {node_type} in path the, argument passed,
+          // to controler is $node_type and nothing other.
           if ($display_mode['targetEntityType'] === 'node') {
             $routes[$display_mode['targetEntityType'] . '.add.' . $key] = new Route(
             // Path to attach this route to:
@@ -95,9 +100,6 @@ class FormModeManagerRoutes implements ContainerInjectionInterface {
               ],
               [
                 '_entity_create_access' => $display_mode['targetEntityType'] . ':{media_bundle}',
-              ],
-              [
-                '_node_operation_route' => TRUE
               ]
             );
           }
