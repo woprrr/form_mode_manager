@@ -61,7 +61,7 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
     // Transliterate the eventual caracters '-' to '_'.
     $form_class = str_replace('-', '_', $form_display);
     $node = $this->entityTypeManager->getStorage('node')->create([
-      'type' => $node_type,
+      'type' => $node_type->id(),
     ]);
 
     $form = $this->entityFormBuilder()->getForm($node, $form_class);
