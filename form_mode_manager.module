@@ -35,10 +35,11 @@ function form_mode_manager_entity_type_alter(array &$entity_types) {
 function form_mode_manager_entity_operation(\Drupal\Core\Entity\EntityInterface $entity) {
   $operations = [];
   $form_modes = \Drupal::service('entity_display.repository')->getAllFormModes();
-  foreach ($form_modes as $entity_type => $display_modes) {
+  $account = \Drupal::currentUser();
+  foreach ($form_modes as $entity_type_id => $display_modes) {
     foreach ($display_modes as $machine_name => $form_display) {
-      if (!isset($form_display['_core'])) {
-        if ($entity->getEntityTypeId() === $entity_type) {
+      if (!isset($form_display['_core']) && $entity->getEntityTypeId() === $entity_type_id) {
+        if ($account->hasPermission("use $machine_name form mode with $entity_type_id entity")) {
           $operations += [
             $machine_name => [
               'title' => t('Edit as @label', ['@label' => $form_display['label']])->render(),
