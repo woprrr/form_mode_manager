@@ -12,16 +12,18 @@ use Drupal\Core\Render\Element;
  */
 function form_mode_manager_entity_type_alter(array &$entity_types) {
   /** @var \Drupal\Core\Entity\EntityDisplayRepository[] $display_modes_list */
-  $form_modes = \Drupal::config('form_mode_manager.settings')->get('form_modes');
+  $form_modes = \Drupal::service('entity_display.repository')->getAllFormModes();
   foreach ($form_modes as $entity_type => $display_modes) {
     /* @var \Drupal\Core\Entity\EntityTypeInterface $entity */
     $entity = $entity_types[$entity_type];
-    foreach ($display_modes as $machine_name => $display_mode) {
-      if (!isset($display_mode['_core'])) {
+    foreach ($display_modes as $machine_name => $form_display) {
+      if (!isset($form_display['_core'])) {
+        // Get the correct canonical path to add operation.
+        $path = $entity->getLinkTemplate('canonical') . "/$machine_name";
         // @TODO Purpose possibility to handle that to define a custom entity FormClass.
         $default_handler_class = $entity->getHandlerClasses()['form']['default'];
         $entity->setFormClass($machine_name, $default_handler_class)
-          ->setLinkTemplate($machine_name, '/' . $entity_type . '/{' . $entity_type . '}/' . $machine_name);
+          ->setLinkTemplate($machine_name, $path);
       }
     }
   }
@@ -32,15 +34,15 @@ function form_mode_manager_entity_type_alter(array &$entity_types) {
  */
 function form_mode_manager_entity_operation(\Drupal\Core\Entity\EntityInterface $entity) {
   $operations = [];
-  $form_modes = \Drupal::config('form_mode_manager.settings')->get('form_modes');
+  $form_modes = \Drupal::service('entity_display.repository')->getAllFormModes();
   foreach ($form_modes as $entity_type => $display_modes) {
-    foreach ($display_modes as $key => $display_mode) {
-      if (!isset($display_mode['_core'])) {
+    foreach ($display_modes as $machine_name => $form_display) {
+      if (!isset($form_display['_core'])) {
         if ($entity->getEntityTypeId() === $entity_type) {
           $operations += [
-            $key => [
-              'title' => t('Edit as @label', ['@label' => $display_mode['label']])->render(),
-              'url' => $entity->toUrl($key),
+            $machine_name => [
+              'title' => t('Edit as @label', ['@label' => $form_display['label']])->render(),
+              'url' => $entity->toUrl($machine_name),
               'weight' => 0,
             ],
           ];
@@ -48,43 +50,5 @@ function form_mode_manager_entity_operation(\Drupal\Core\Entity\EntityInterface 
       }
     }
   }
-
   return $operations;
-}
-
-/**
- * Implements hook_ENTITY_TYPE_insert().
- */
-function form_mode_manager_entity_form_mode_insert(Drupal\Core\Entity\EntityInterface $entity) {
-  form_mode_manager_form_mode_list();
-}
-
-/**
- * Implements hook_ENTITY_TYPE_update().
- */
-function form_mode_manager_entity_form_mode_update(Drupal\Core\Entity\EntityInterface $entity) {
-  form_mode_manager_form_mode_list();
-}
-
-/**
- * Implements hook_ENTITY_TYPE_delete().
- */
-function form_mode_manager_entity_form_mode_delete(Drupal\Core\Entity\EntityInterface $entity) {
-  form_mode_manager_form_mode_list();
-}
-
-/**
- * Helper function.
- *
- * Fetch the list of active form_modes,
- * and store in a configuration.
- *
- * @TODO That helper is mandatory to conturn the hook_entity_type_alter(),
- * limitation @see https://www.drupal.org/node/2700537.
- */
-function form_mode_manager_form_mode_list() {
-  // On Each entity changes re-generate active form_mode list.
-  $config = \Drupal::configFactory()->getEditable('form_mode_manager.settings');
-  $config->set('form_modes', \Drupal::service('entity_display.repository')->getAllFormModes());
-  $config->save();
 }

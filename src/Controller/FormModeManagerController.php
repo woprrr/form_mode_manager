@@ -9,9 +9,9 @@ namespace Drupal\form_mode_manager\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\media_entity\MediaBundleInterface;
-use Drupal\node\NodeTypeInterface;
+use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -27,13 +27,23 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
   protected $entityTypeManager;
 
   /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected $account;
+
+  /**
    * Constructs a FormModeManagerController object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   Entity type manager service.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The current user.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountInterface $account) {
     $this->entityTypeManager = $entity_type_manager;
+    $this->account = $account;
   }
 
   /**
@@ -41,71 +51,53 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('current_user')
     );
   }
 
   /**
    * Provides the node submission form.
    *
-   * @param \Drupal\node\NodeTypeInterface $node_type
-   *   The node type entity for the node.
+   * @param string $entity_bundle_id
+   *   The id of entity bundle from the first route parameter.
    * @param string $form_display
-   *   The operation identifying the form variation (form_mode),
-   *   to be returned.
+   *   The operation name identifying the form variation (form_mode).
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition. Useful when a single class is used for multiple,
+   *   possibly dynamic entity types.
    *
    * @return array
    *   A node submission form.
    */
-  public function nodeAdd(NodeTypeInterface $node_type, $form_display) {
-    // Transliterate the eventual caracters '-' to '_'.
-    $form_class = str_replace('-', '_', $form_display);
-    $node = $this->entityTypeManager->getStorage('node')->create([
-      'type' => $node_type->id(),
+  public function entityAdd($entity_bundle_id, $form_display, EntityTypeInterface $entity_type) {
+    $form_class = preg_replace('#([^a-z0-9])#', '_', $form_display);
+    $entity = $this->entityTypeManager->getStorage($entity_type->id())->create([
+      $entity_type->getKey('bundle') => $entity_bundle_id,
+      $entity_type->getKey('uid') => $this->account->id()
     ]);
+    $entity_form = $this->entityFormBuilder()->getForm($entity, $form_class);
 
-    $form = $this->entityFormBuilder()->getForm($node, $form_class);
-
-    return $form;
+    return $entity_form;
   }
 
   /**
-   * Provides the node submission form.
+   * The _title_callback for the entity.add routes,
+   * provide by form_mode_manager module.
    *
-   * @param MediaBundleInterface $media_bundle
-   *   The node type entity for the node.
+   * @param string $entity_bundle_id
+   *   The id of entity bundle from the first route parameter.
    * @param string $form_display
-   *   The operation identifying the form variation (form_mode),
-   *   to be returned.
-   *
-   * @return array
-   *   A node submission form.
-   */
-  public function mediaAdd(MediaBundleInterface $media_bundle, $form_display) {
-    $user = \Drupal::currentUser();
-    // Transliterate the eventual caracters '-' to '_'.
-    $form_class = str_replace('-', '_', $form_display);
-    $bundle = $media_bundle->id();
-    $langcode = $this->moduleHandler()->invoke('language', 'get_default_langcode', ['media', $bundle]);
-    $media = $this->entityTypeManager->getStorage('media')->create([
-      'uid' => $user->id(),
-      'bundle' => $bundle,
-      'langcode' => $langcode ? $langcode : $this->languageManager->getDefaultLanguage()->getId(),
-    ]);
-
-    return $this->entityFormBuilder()->getForm($media, $form_class);
-  }
-  /**
-   * The _title_callback for the node.add route.
-   *
-   * @param \Drupal\node\NodeTypeInterface $node_type
-   *   The current node.
+   *   The operation name identifying the form variation (form_mode).
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition. Useful when a single class is used for multiple,
+   *   possibly dynamic entity types.
    *
    * @return string
    *   The page title.
    */
-  public function addPageTitle(NodeTypeInterface $node_type) {
-    return $this->t('Create @name', ['@name' => $node_type->label()]);
+  public function addPageTitle($entity_bundle_id, $form_display, EntityTypeInterface $entity_type) {
+    return $this->t('Create @name', ['@name' => $entity_type->getLabel()]);
   }
 
 }
