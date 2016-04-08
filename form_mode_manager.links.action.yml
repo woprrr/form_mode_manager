@@ -1,0 +1,9 @@
+form_mode_manager.action_links_add:
+  class: \Drupal\Core\Menu\LocalActionDefault
+  deriver: \Drupal\form_mode_manager\Plugin\Derivative\FormModeManagerLocalAction
+  weight: 100
+#form_mode_manager.action_links_add:
+#  route_name: node.add_page
+#  title: 'Add content1'
+#  appears_on:
+#    - system.admin_content

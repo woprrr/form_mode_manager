@@ -5,7 +5,9 @@
  * Contains form_mode_manager.module.
  */
 
+use Drupal\Core\Link;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Url;
 
 /**
  * Implements hook_entity_type_alter().
@@ -48,4 +50,43 @@ function form_mode_manager_entity_operation(\Drupal\Core\Entity\EntityInterface 
     }
   }
   return $operations;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function form_mode_manager_theme() {
+  return [
+    'form_mode_manager_add_list' => [
+      'variables' => ['content' => NULL, 'form_mode' => NULL],
+    ]
+  ];
+}
+
+/**
+ * Prepares variables for list of available entity type templates.
+ *
+ * Default template: form-mode-manager-add-list.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - content: An array of content types.
+ *
+ * @see \Drupal\form_mode_manager\Controller\FormModeManagerController::addPage()
+ */
+function template_preprocess_form_mode_manager_add_list(&$variables) {
+  $variables['types'] = [];
+  if (!empty($variables['content'])) {
+    /** @var \Drupal\Core\Config\Entity\ConfigEntityBundleBase $type */
+    foreach ($variables['content'] as $type) {
+      $variables['types'][$type->id()] = [
+        'type' => $type->id(),
+        'add_link' => Link::fromTextAndUrl($type->label(), new Url('entity.add.' . $variables['form_mode'],['entity_bundle_id' => $type->id(), 'form_display' => $variables['form_mode']])),
+        'description' => [
+          // Do verify it because "contact" entity not have description.
+          '#markup' => (method_exists($type, 'getDescription')) ? $type->getDescription() : $type->label()
+        ],
+      ];
+    }
+  }
 }

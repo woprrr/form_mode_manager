@@ -8,6 +8,7 @@
 namespace Drupal\form_mode_manager;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\TranslationManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -31,6 +32,12 @@ class FormModeManagerPermissions implements ContainerInjectionInterface {
    */
   protected $translationManager;
 
+  /**
+   * The entity display repository.
+   *
+   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
+   */
+  protected $entityDisplayRepository;
 
   /**
    * Constructs a new FormModeManagerPermissions instance.
@@ -38,9 +45,10 @@ class FormModeManagerPermissions implements ContainerInjectionInterface {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
    * @param \Drupal\Core\StringTranslation\TranslationManager $string_translation
    */
-  public function __construct(EntityTypeManagerInterface $entity_manager, TranslationManager $string_translation) {
+  public function __construct(EntityTypeManagerInterface $entity_manager, TranslationManager $string_translation, EntityDisplayRepositoryInterface $entity_display_repository) {
     $this->entityTypeManager = $entity_manager;
     $this->translationManager = $string_translation;
+    $this->entityDisplayRepository = $entity_display_repository;
   }
 
   /**
@@ -49,21 +57,20 @@ class FormModeManagerPermissions implements ContainerInjectionInterface {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_type.manager'),
-      $container->get('string_translation')
+      $container->get('string_translation'),
+      $container->get('entity_display.repository')
     );
   }
 
   /**
-   * Returns an array of entity_clone permissions.
+   * Returns an array of form_mode_manager permissions.
    *
    * @return array
    *   The permission list.
    */
   public function permissions() {
     $permissions = [];
-
-    $form_modes = \Drupal::service('entity_display.repository')->getAllFormModes();
-    foreach ($form_modes as $entity_type_id => $display_modes) {
+    foreach ($this->entityDisplayRepository->getAllFormModes() as $entity_type_id => $display_modes) {
       foreach ($display_modes as $machine_name => $form_display) {
         if (!isset($form_display['_core'])) {
           $form_modes_storage = \Drupal::entityTypeManager()->getStorage('entity_form_mode');
@@ -85,6 +92,7 @@ class FormModeManagerPermissions implements ContainerInjectionInterface {
         }
       }
     }
+
     return $permissions;
   }
 
