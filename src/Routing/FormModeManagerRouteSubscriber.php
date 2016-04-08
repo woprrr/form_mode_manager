@@ -62,8 +62,9 @@ class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
           if ($route = $this->getFormModeManagerAddRoute($entity_type, $display_mode, $machine_name)) {
             $collection->add("entity.add." . $machine_name, $route);
           }
+          // Specific case with user entity (add operation).
           if ($entity_type_id == 'user' && $route = $this->getFormModeManagerUserAddRoute($entity_type, $display_mode, $machine_name)) {
-            $collection->add("entity.add." . $machine_name, $route);
+            $collection->add($display_mode['id'], $route);
           }
         }
       }
@@ -137,7 +138,7 @@ class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
   }
 
   /**
-   * Gets entity add operation routes with specific form_display.
+   * Gets entity create user routes with specific form_display.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition. Useful when a single class is used for multiple,
@@ -151,18 +152,20 @@ class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
    *   The generated route, if available.
    */
   protected function getFormModeManagerUserAddRoute(EntityTypeInterface $entity_type, $form_display, $machine_name) {
-    $entity_type_id = $entity_type->id();
-    $route = new Route("/$entity_type_id/register/{form_display}");
-    $route
-      ->addDefaults([
-        '_entity_form' => $form_display['id'],
-        '_title' => t('Create new account')->render()
-      ])
-      ->addRequirements([
-        '_access_user_register' => 'TRUE',
-        '_permission' => "use $machine_name form mode with $entity_type_id entity"
-      ]);
-    return $route;
+    if ($entity_type->id() === 'user') {
+      $route = new Route("/{$entity_type->id()}/register/{form_display}");
+      $route
+        ->addDefaults([
+          '_entity_form' => $form_display['id'],
+          '_title' => t('Create new account')->render()
+        ])
+        ->addRequirements([
+          '_access_user_register' => 'TRUE',
+          '_permission' => "use $machine_name form mode with {$entity_type->id()} entity"
+        ]);
+      return $route;
+    }
+    return NULL;
   }
 
 }

@@ -20,7 +20,6 @@ function form_mode_manager_entity_type_alter(array &$entity_types) {
       if (!isset($form_display['_core'])) {
         // Get the correct canonical path to add operation.
         $path = $entity->getLinkTemplate('canonical') . "/$machine_name";
-        // @TODO Purpose possibility to handle that to define a custom entity FormClass.
         $default_handler_class = $entity->getHandlerClasses()['form']['default'];
         $entity->setFormClass($machine_name, $default_handler_class)
           ->setLinkTemplate($machine_name, $path);
@@ -36,19 +35,16 @@ function form_mode_manager_entity_operation(\Drupal\Core\Entity\EntityInterface 
   $operations = [];
   $form_modes = \Drupal::service('entity_display.repository')->getAllFormModes();
   $account = \Drupal::currentUser();
-  foreach ($form_modes as $entity_type_id => $display_modes) {
-    foreach ($display_modes as $machine_name => $form_display) {
-      if (!isset($form_display['_core']) && $entity->getEntityTypeId() === $entity_type_id) {
-        if ($account->hasPermission("use $machine_name form mode with $entity_type_id entity")) {
-          $operations += [
-            $machine_name => [
-              'title' => t('Edit as @label', ['@label' => $form_display['label']])->render(),
-              'url' => $entity->toUrl($machine_name),
-              'weight' => 0,
-            ],
-          ];
-        }
-      }
+  $current_entity_operations = $form_modes[$entity->getEntityTypeId()];
+  foreach ($current_entity_operations as $machine_name => $form_mode) {
+    if (!isset($form_mode['_core']) && $account->hasPermission("use $machine_name form mode with {$entity->getEntityTypeId()} entity")) {
+      $operations += [
+        $machine_name => [
+          'title' => t('Edit as @label', ['@label' => $form_mode['label']])->render(),
+          'url' => $entity->toUrl($machine_name),
+          'weight' => 0,
+        ],
+      ];
     }
   }
   return $operations;
