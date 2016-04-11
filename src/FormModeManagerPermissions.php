@@ -73,9 +73,9 @@ class FormModeManagerPermissions implements ContainerInjectionInterface {
     foreach ($this->entityDisplayRepository->getAllFormModes() as $entity_type_id => $display_modes) {
       foreach ($display_modes as $machine_name => $form_display) {
         if (!isset($form_display['_core'])) {
-          $form_modes_storage = \Drupal::entityTypeManager()->getStorage('entity_form_mode');
+          $form_modes_storage = $this->entityTypeManager->getStorage('entity_form_mode');
           $form_mode = $form_modes_storage->loadByProperties(['id' => $form_display['id']]);
-          $permissions["use $machine_name form mode with $entity_type_id entity"] = [
+          $permissions["use {$form_display['id']} form mode"] = [
             'title' => $this->translationManager->translate('Use <a href=":url">@form_mode</a> form mode with <b>@entity_type_id</b> entity', [
               '@entity_type_id' => $entity_type_id,
               '@form_mode' => $form_display['label'],

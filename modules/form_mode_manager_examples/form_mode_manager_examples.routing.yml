@@ -1,0 +1,7 @@
+form_mode_manager_examples.front_page:
+  path: '/form_mode_manager_examples'
+  defaults:
+    _controller: '\Drupal\form_mode_manager_examples\Controller\FrontPage::content'
+    _title: 'Form Mode Manager examples '
+  requirements:
+    _permission: 'access content'

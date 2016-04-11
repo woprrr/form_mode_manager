@@ -7,6 +7,7 @@
 
 namespace Drupal\form_mode_manager\Controller;
 
+use Drupal\Core\Access\AccessResultForbidden;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -129,14 +130,15 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
    *   A node submission form.
    */
   public function entityAdd($entity_bundle_id, $form_display, EntityTypeInterface $entity_type) {
-    $form_class = preg_replace('#([^a-z0-9])#', '_', $form_display);
-    $entity = $this->entityTypeManager()->getStorage($entity_type->id())->create([
-      $entity_type->getKey('bundle') => $entity_bundle_id,
-      $entity_type->getKey('uid') => $this->account->id()
-    ]);
-    $entity_form = $this->entityFormBuilder()->getForm($entity, $form_class);
+    $entity_id = $entity_type->id();
+      $form_class = preg_replace('#([^a-z0-9])#', '_', $form_display);
+      $entity_interface = $this->entityTypeManager()->getStorage($entity_id)->create([
+        $entity_type->getKey('bundle') => $entity_bundle_id,
+        $entity_type->getKey('uid') => $this->account->id()
+      ]);
+      $entity_form = $this->entityFormBuilder()->getForm($entity_interface, $form_class);
 
-    return $entity_form;
+      return $entity_form;
   }
 
   /**
@@ -155,7 +157,8 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
    *   The page title.
    */
   public function addPageTitle($entity_bundle_id, $form_display, EntityTypeInterface $entity_type) {
-    return $this->t('Create @name as @form_display', ['@name' => $entity_type->getLabel(), '@form_display' => $form_display]);
+    $bundle = $this->entityTypeManager()->getStorage($entity_type->getBundleEntityType())->load($entity_bundle_id);
+    return $this->t('Create @name as @form_display', ['@name' => $bundle->get('name'), '@form_display' => $form_display]);
   }
 
 }

@@ -1,0 +1,16 @@
+<?php
+/**
+ * @file
+ * Contains form_mode_manager_examples.install.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function form_mode_manager_examples_install() {
+  // Set the front page.
+  \Drupal::configFactory()
+    ->getEditable('system.site')
+    ->set('page.front', '/form_mode_manager_examples')
+    ->save();
+}

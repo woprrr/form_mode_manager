@@ -1,0 +1,10 @@
+name: FormModeManager examples
+type: module
+description: Form Mode Manager allows to use form_mode implement on Drupal 8 on each Entity.
+core: 8.x
+dependencies:
+  - node
+  - image
+  - user
+theme:
+  - bartik

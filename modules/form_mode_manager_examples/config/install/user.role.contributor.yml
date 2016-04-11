@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies: {  }
+id: contributor
+label: Contributor
+weight: 3
+is_admin: null
+permissions:
+  - 'use node.contributor form mode'
+  - 'access content overview'
+  - 'create node_form_mode_example content'
+  - 'delete any node_form_mode_example content'
+  - 'delete own node_form_mode_example content'
+  - 'delete node_form_mode_example revisions'
+  - 'edit any node_form_mode_example content'
+  - 'edit own node_form_mode_example content'
+  - 'revert node_form_mode_example revisions'
+  - 'view node_form_mode_example revisions'
+  - 'view the administration theme'
+  - 'access toolbar'
