@@ -53,7 +53,7 @@ class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
     foreach ($this->entityDisplayRepository->getAllFormModes() as $entity_type_id => $display_modes) {
       $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
       foreach ($display_modes as $machine_name => $display_mode) {
-        if (!isset($display_mode['_core'])) {
+        if ($machine_name != 'register') {
           if ($route = $this->getFormModeManagerListPage($entity_type, $display_mode, $machine_name)) {
             // Add entity type list page specific to form_modes.
             $collection->add("form_mode_manager.$machine_name.add_page", $route);

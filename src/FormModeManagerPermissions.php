@@ -72,7 +72,7 @@ class FormModeManagerPermissions implements ContainerInjectionInterface {
     $permissions = [];
     foreach ($this->entityDisplayRepository->getAllFormModes() as $entity_type_id => $display_modes) {
       foreach ($display_modes as $machine_name => $form_display) {
-        if (!isset($form_display['_core'])) {
+        if ($machine_name != 'register') {
           $form_modes_storage = $this->entityTypeManager->getStorage('entity_form_mode');
           $form_mode = $form_modes_storage->loadByProperties(['id' => $form_display['id']]);
           $permissions["use {$form_display['id']} form mode"] = [

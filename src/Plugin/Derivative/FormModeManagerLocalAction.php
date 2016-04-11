@@ -78,7 +78,7 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
     $this->derivatives = array();
     foreach ($this->entityDisplayRepository->getAllFormModes() as $entity_type_id => $display_modes) {
       foreach ($display_modes as $machine_name => $display_mode) {
-        if (!isset($display_mode['_core'])) {
+        if ($machine_name != 'register') {
           /* @TODO found an generic solution to get all entity listings,
            * ATM the listing routes are declare a part in core views,
            * Other available in entity.{$entity_type_id}.collection,
