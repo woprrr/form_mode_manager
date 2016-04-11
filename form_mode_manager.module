@@ -37,7 +37,8 @@ function form_mode_manager_entity_operation(\Drupal\Core\Entity\EntityInterface 
   $operations = [];
   $form_modes = \Drupal::service('entity_display.repository')->getAllFormModes();
   $account = \Drupal::currentUser();
-  if ($current_entity_operations = $form_modes[$entity->getEntityTypeId()]) {
+  if (isset($form_modes[$entity->getEntityTypeId()])) {
+    $current_entity_operations = $form_modes[$entity->getEntityTypeId()];
     foreach ($current_entity_operations as $machine_name => $form_mode) {
       if ($machine_name != 'register' && $account->hasPermission("use {$form_mode['id']} form mode")) {
         $operations += [
