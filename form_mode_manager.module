@@ -5,6 +5,7 @@
  * Contains form_mode_manager.module.
  */
 
+use Drupal\Core\Entity\EntityFormModeInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
@@ -40,7 +41,7 @@ function form_mode_manager_entity_operation(\Drupal\Core\Entity\EntityInterface 
   if (isset($form_modes[$entity->getEntityTypeId()])) {
     $current_entity_operations = $form_modes[$entity->getEntityTypeId()];
     foreach ($current_entity_operations as $machine_name => $form_mode) {
-      if ($machine_name != 'register' && $account->hasPermission("use {$form_mode['id']} form mode")) {
+      if ($machine_name != 'register' && ($account->hasPermission("use {$form_mode['id']} form mode") && $entity->hasLinkTemplate($machine_name))) {
         $operations += [
           $machine_name => [
             'title' => t('Edit as @label', ['@label' => $form_mode['label']])->render(),
@@ -90,5 +91,16 @@ function template_preprocess_form_mode_manager_add_list(&$variables) {
         ],
       ];
     }
+  }
+}
+
+/**
+ * Implements hook_entity_update().
+ */
+function form_mode_manager_entity_update($entity, $type) {
+  if ($entity instanceof \Drupal\Core\Entity\Entity\EntityFormDisplay && ($entity->status() != $entity->original->status())) {
+    // Rebuild route information when form modes that register routes,
+    // are created/updated.
+    \Drupal::service('router.builder')->rebuild();
   }
 }

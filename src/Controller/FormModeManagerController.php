@@ -7,7 +7,7 @@
 
 namespace Drupal\form_mode_manager\Controller;
 
-use Drupal\Core\Access\AccessResultForbidden;
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -159,6 +159,22 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
   public function addPageTitle($entity_bundle_id, $form_display, EntityTypeInterface $entity_type) {
     $bundle = $this->entityTypeManager()->getStorage($entity_type->getBundleEntityType())->load($entity_bundle_id);
     return $this->t('Create @name as @form_display', ['@name' => $bundle->get('name'), '@form_display' => $form_display]);
+  }
+
+  /**
+   * Checks access for the FormModeManager routes.
+   *
+   * @param string $form_display
+   *   The operation name identifying the form variation (form_mode).
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition. Useful when a single class is used for multiple,
+   *   possibly dynamic entity types.
+   *
+   * @return \Drupal\Core\Access\AccessResultInterface
+   *   The access result.
+   */
+  public function checkAccess($form_display, EntityTypeInterface $entity_type) {
+    return AccessResult::allowedIfHasPermission($this->currentUser(), "use {$entity_type->id()}.{$form_display} form mode")->cachePerPermissions();
   }
 
 }

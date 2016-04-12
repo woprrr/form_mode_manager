@@ -135,7 +135,8 @@ class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
     if ($entity_type->getFormClass($machine_name)) {
       $entity_id = $entity_type->id();
       $route = new Route("/$entity_id/add/" . "{entity_bundle_id}" . "/{form_display}");
-      $access = (!empty($entity_type->getBundleEntityType())) ? "{$entity_type->id()}:{{$entity_type->getBundleEntityType()}}" : $entity_type->id();
+      // Check if that entity have bundles to check access by bundle or by entity type.
+      $access = (!empty($entity_type->getBundleEntityType())) ? "{$entity_type->id()}:{entity_bundle_id}" : $entity_type->id();
       $route
         ->addDefaults([
           '_entity_form' => $form_display['id'],
@@ -143,13 +144,21 @@ class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
           '_title_callback' => '\Drupal\form_mode_manager\Controller\FormModeManagerController::addPageTitle',
           'entity_type' => $entity_type
         ])
-        ->setRequirement('_permission', "use {$form_display['id']} form mode")
-        ->setOption('_admin_route', TRUE);
+        ->setRequirement('_custom_access', '\Drupal\form_mode_manager\Controller\FormModeManagerController::checkAccess');
       if ($entity_id == 'node') {
-        $route->setRequirement('_node_add_access', $access);
-        $route->setOption('_node_operation_route', TRUE);
-      } else {
-        $route->setRequirement('_entity_create_access', $access);
+        $route->setRequirement('_node_add_access', $access)
+          ->setOptions([
+            '_node_operation_route' => TRUE,
+            'parameters' => [
+              'entity_bundle_id' => [
+                'with_config_overrides' => TRUE
+              ]
+            ]
+          ]);
+      }
+      else {
+        $route->setRequirement('_entity_create_access', $access)
+          ->setOption('_admin_route', TRUE);
       }
       return $route;
     }
@@ -203,7 +212,7 @@ class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
    */
   protected function getFormModeManagerListPage(EntityTypeInterface $entity_type, $form_display, $machine_name) {
     $entity_id = $entity_type->id();
-    $route = new Route("/$entity_id/add/form_mode_manager/$machine_name");
+    $route = new Route("/$entity_id/add/$machine_name");
     $route
       ->addDefaults([
         '_controller' => '\Drupal\form_mode_manager\Controller\FormModeManagerController::addPage',
@@ -212,8 +221,7 @@ class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
         'form_display' => $machine_name
       ])
       ->addRequirements([
-        '_entity_create_access' => "$entity_id",
-        '_permission' => "use {$entity_type->id()}.{$form_display} form mode"
+        '_permission' => "use {$form_display['id']} form mode"
       ])
       ->setOptions([
         '_admin_route' => TRUE,
