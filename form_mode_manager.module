@@ -95,12 +95,24 @@ function template_preprocess_form_mode_manager_add_list(&$variables) {
 }
 
 /**
+ * Implements hook_entity_form_mode_presave().
+ */
+function form_mode_manager_entity_form_mode_presave(EntityFormModeInterface $form_mode) {
+  // Invalidate cache tags to rebuild hook_entity_type_alter().
+  \Drupal::service('cache_tags.invalidator')->invalidateTags(['entity_types']);
+  // Rebuild route information when form modes that register routes,
+  // are created/updated.
+  \Drupal::service('router.builder')->rebuild();
+}
+
+/**
  * Implements hook_entity_update().
  */
 function form_mode_manager_entity_update($entity, $type) {
   if ($entity instanceof \Drupal\Core\Entity\Entity\EntityFormDisplay && ($entity->status() != $entity->original->status())) {
     // Rebuild route information when form modes that register routes,
     // are created/updated.
+    \Drupal::service('cache_tags.invalidator')->invalidateTags(['entity_types']);
     \Drupal::service('router.builder')->rebuild();
   }
 }
