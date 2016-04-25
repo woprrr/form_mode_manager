@@ -5,6 +5,7 @@
  * Contains form_mode_manager.module.
  */
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
@@ -96,7 +97,7 @@ function template_preprocess_form_mode_manager_add_list(&$variables) {
 /**
  * Implements hook_entity_update().
  */
-function form_mode_manager_entity_update($entity, $type) {
+function form_mode_manager_entity_update(EntityInterface $entity) {
   if ($entity instanceof \Drupal\Core\Entity\Entity\EntityFormDisplay) {
       $parent_entity = \Drupal::entityTypeManager()->getStorage($entity->getTargetEntityTypeId())->getEntityType();
     // When user enable an form_mode we can create all routes/elements to use/view it on entity lists.
