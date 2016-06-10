@@ -6,5 +6,6 @@ dependencies:
   - node
   - image
   - user
+  - form_mode_manager
 theme:
   - bartik
