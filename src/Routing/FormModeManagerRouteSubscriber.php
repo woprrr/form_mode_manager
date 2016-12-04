@@ -212,7 +212,7 @@ class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
    */
   protected function getFormModeManagerListPage(EntityTypeInterface $entity_type, $form_display, $machine_name) {
     $entity_id = $entity_type->id();
-    $route = new Route("/$entity_id/add/$machine_name");
+    $route = new Route("/$entity_id/add-$machine_name");
     $route
       ->addDefaults([
         '_controller' => '\Drupal\form_mode_manager\Controller\FormModeManagerController::addPage',
