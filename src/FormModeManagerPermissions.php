@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\form_mode_manager\FormModeManagerPermissions.
- */
-
 namespace Drupal\form_mode_manager;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -43,7 +38,9 @@ class FormModeManagerPermissions implements ContainerInjectionInterface {
    * Constructs a new FormModeManagerPermissions instance.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
+   *   The entity type manager.
    * @param \Drupal\Core\StringTranslation\TranslationManager $string_translation
+   *   The translation manager.
    */
   public function __construct(EntityTypeManagerInterface $entity_manager, TranslationManager $string_translation, EntityDisplayRepositoryInterface $entity_display_repository) {
     $this->entityTypeManager = $entity_manager;
@@ -79,15 +76,15 @@ class FormModeManagerPermissions implements ContainerInjectionInterface {
             'title' => $this->translationManager->translate('Use <a href=":url">@form_mode</a> form mode with <b>@entity_type_id</b> entity', [
               '@entity_type_id' => $entity_type_id,
               '@form_mode' => $form_display['label'],
-              ':url' => $form_mode[$form_display['id']]->url()
+              ':url' => $form_mode[$form_display['id']]->url(),
             ]),
             'description' => [
               '#prefix' => '<em>',
               '#markup' => $this->translationManager->translate('Warning: This permission may have security implications depending on how the <b>@entity_type_id</b> entity is configured.', [
                 '@entity_type_id' => $entity_type_id,
               ]),
-              '#suffix' => '</em>'
-            ]
+              '#suffix' => '</em>',
+            ],
           ];
         }
       }

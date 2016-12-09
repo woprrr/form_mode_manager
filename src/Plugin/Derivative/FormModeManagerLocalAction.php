@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\form_mode_manager\Plugin\Derivative\FormModeManagerLocalAction.
- */
-
 namespace Drupal\form_mode_manager\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
@@ -49,8 +44,13 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
    *
    * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
    *   The route provider to load routes by name.
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   The entity manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   *   The new entity display repository.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   (optional) Run access checks for this account. Defaults to the current
+   *   user.
    */
   public function __construct(RouteProviderInterface $route_provider, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, AccountInterface $account) {
     $this->routeProvider = $route_provider;
@@ -88,19 +88,21 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
             $this->derivatives["form_mode_manager.{$display_mode['id']}"] = [
               'route_name' => "form_mode_manager.$machine_name.add_page",
               'title' => $this->t('Add @entity_label as @form_mode', ['@form_mode' => $display_mode['label'], '@entity_label' => $entity_type_id]),
-              'appears_on' => ["entity.{$entity_type_id}.collection"]
+              'appears_on' => ["entity.{$entity_type_id}.collection"],
             ];
-          } elseif ($entity_type_id == "node") {
+          }
+          elseif ($entity_type_id == "node") {
             $this->derivatives["form_mode_manager.{$display_mode['id']}"] = [
               'route_name' => "form_mode_manager.$machine_name.add_page",
               'title' => $this->t('Add @entity_label as @form_mode', ['@form_mode' => $display_mode['label'], '@entity_label' => t('content')]),
-              'appears_on' => ["system.admin_content"]
+              'appears_on' => ["system.admin_content"],
             ];
-          } elseif ($entity_type_id == "media") {
+          }
+          elseif ($entity_type_id == "media") {
             $this->derivatives["form_mode_manager.{$display_mode['id']}"] = [
               'route_name' => "form_mode_manager.$machine_name.add_page",
               'title' => $this->t('Add @entity_label as @form_mode', ['@form_mode' => $display_mode['label'], '@entity_label' => $entity_type_id]),
-              'appears_on' => ["view.media.media_page_list"]
+              'appears_on' => ["view.media.media_page_list"],
             ];
           }
         }

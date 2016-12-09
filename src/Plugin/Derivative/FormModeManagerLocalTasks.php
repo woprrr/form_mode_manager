@@ -41,10 +41,13 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
   /**
    * Constructs a new DynamicLocalTasks.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\StringTranslation\TranslationManager $string_translation
-   *   The translation manager.
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   *   The new entity display repository.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   (optional) Run access checks for this account. Defaults to the current
+   *   user.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, AccountInterface $account) {
     $this->entityTypeManager = $entity_type_manager;
@@ -74,7 +77,7 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
         if ($machine_name != 'register') {
           $this->derivatives["form_mode_manager.{$display_mode['id']}.task_tab"] = [
             'route_name' => "entity." . $display_mode['id'],
-            'title' => $this->t('Edit as @form_mode', ['@form_mode' => $display_mode['label'],]),
+            'title' => $this->t('Edit as @form_mode', ['@form_mode' => $display_mode['label']]),
             'base_route' => "entity.$entity_type_id.canonical",
           ];
         }

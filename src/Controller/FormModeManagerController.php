@@ -38,13 +38,14 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
   protected $account;
 
   /**
-   * Get formModeMachineName
+   * Get formModeMachineName.
    *
    * @param array $form_display
    *   An array represent needed Form mode for an entity.
    *
    * @return string
-   *   The form mode machine name without prefixe of entity (entity.form_mode_name).
+   *   The form mode machine name without prefixe of,
+   *   entity (entity.form_mode_name).
    */
   public function getFormModeMachineName(array $form_display) {
     return preg_replace('/^.*\./', '', $form_display['id']);
@@ -81,8 +82,8 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
    * Redirects to entity/add/[bundle] if only one content type is available.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition. Useful when a single class is used for multiple,
-   *   possibly dynamic entity types.
+   *   The entity type definition. Useful when a single class is,
+   *   used for multiple, possibly dynamic entity types.
    * @param string $form_display
    *   The operation name identifying the form variation (form_mode).
    *
@@ -93,7 +94,7 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
    *   type.
    */
   public function addPage(EntityTypeInterface $entity_type, $form_display) {
-      $build = [
+    $build = [
       '#theme' => 'form_mode_manager_add_list',
       '#cache' => [
         'tags' => $this->entityTypeManager()->getDefinition($entity_type->getBundleEntityType())->getListCacheTags(),
@@ -129,8 +130,8 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
    * @param array $form_display
    *   The operation name identifying the form variation (form_mode).
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition. Useful when a single class is used for multiple,
-   *   possibly dynamic entity types.
+   *   The entity type definition. Useful when a single class is,
+   *   used for multiple, possibly dynamic entity types.
    *
    * @return array
    *   A node submission form.
@@ -138,7 +139,7 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
   public function entityAdd($entity_bundle_id, $form_display, EntityTypeInterface $entity_type) {
     $entity_interface = $this->entityTypeManager()->getStorage($entity_type->id())->create([
       $entity_type->getKey('bundle') => $entity_bundle_id,
-      $entity_type->getKey('uid') => $this->account->id()
+      $entity_type->getKey('uid') => $this->account->id(),
     ]);
     $entity_form = $this->entityFormBuilder()->getForm($entity_interface, $this->getFormModeMachineName($form_display));
 
@@ -146,16 +147,15 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
   }
 
   /**
-   * The _title_callback for the entity.add routes,
-   * provide by form_mode_manager module.
+   * The _title_callback for the entity.add routes.
    *
    * @param string $entity_bundle_id
    *   The id of entity bundle from the first route parameter.
    * @param array $form_display
    *   The operation name identifying the form variation (form_mode).
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition. Useful when a single class is used for multiple,
-   *   possibly dynamic entity types.
+   *   The entity type definition. Useful when a single class is,
+   *   used for multiple, possibly dynamic entity types.
    *
    * @return string
    *   The page title.

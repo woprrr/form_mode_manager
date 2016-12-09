@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\form_mode_manager_examples\Controller\FrontPage.
- */
 
 namespace Drupal\form_mode_manager_examples\Controller;
 
@@ -22,7 +18,7 @@ class FrontPage extends ControllerBase {
   protected $fmmExampleEntityBundles = [
     'article',
     'page',
-    'node_form_mode_example'
+    'node_form_mode_example',
   ];
 
   /**

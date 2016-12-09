@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\Tests\FormModeManagerExamplesTest.
- */
 
 namespace Drupal\form_mode_manager_examples\Tests;
 
