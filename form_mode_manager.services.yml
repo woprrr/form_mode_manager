@@ -4,3 +4,8 @@ services:
     arguments: ['@entity_type.manager', '@entity_display.repository']
     tags:
       - { name: event_subscriber }
+  form_mode_manager.param_converter:
+    class: Drupal\form_mode_manager\ParamConverter\FormModeManagerConverter
+    arguments: ['@entity_display.repository']
+    tags:
+      - { name: paramconverter }
