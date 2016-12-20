@@ -10,7 +10,7 @@ third_party_settings:
     parent: 'main:'
 name: 'Node form mode example'
 type: node_form_mode_example
-description: 'An demo content type to show FormModeManager functionalities.'
+description: 'An demo content type to show Form Mode Manager functionalities.'
 help: ''
 new_revision: false
 preview_mode: 1

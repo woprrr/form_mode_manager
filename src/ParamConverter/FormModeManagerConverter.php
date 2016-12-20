@@ -43,7 +43,7 @@ class FormModeManagerConverter implements ParamConverterInterface {
    * {@inheritdoc}
    */
   public function applies($definition, $name, Route $route) {
-    if ($name === 'form_display' && (!empty($definition['type']) && preg_match('/^.*\./', $definition['type']) != 0)) {
+    if ('form_display' === $name && (!empty($definition['type']) && 0 != preg_match('/^.*\./', $definition['type']))) {
       return TRUE;
     }
     return FALSE;
@@ -68,7 +68,7 @@ class FormModeManagerConverter implements ParamConverterInterface {
     if (isset($defaults['_entity_form'])) {
       return explode('.', $defaults['_entity_form'])[0];
     }
-    elseif (preg_match('/^.*\./', $definition['type']) != 0) {
+    elseif (0 != preg_match('/^.*\./', $definition['type'])) {
       return $defaults['_route_object']->getDefault('entity_type')->id();
     }
 

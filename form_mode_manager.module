@@ -7,25 +7,29 @@
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Link;
-use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
 
 /**
  * Implements hook_entity_type_alter().
+ *
+ * Create one operation by modes available on each entities,
+ * available to use form modes. In that moment we don't need,
+ * to filter modes by enable or not on entities.
  */
 function form_mode_manager_entity_type_alter(array &$entity_types) {
+
+
   /** @var \Drupal\Core\Entity\EntityDisplayRepository[] $display_modes_list */
   $form_modes = \Drupal::service('entity_display.repository')->getAllFormModes();
   foreach ($form_modes as $entity_type => $display_modes) {
     /* @var \Drupal\Core\Entity\EntityTypeInterface $entity */
     $entity = $entity_types[$entity_type];
+    unset($display_modes['register']);
     foreach ($display_modes as $machine_name => $form_display) {
-      if ($machine_name != 'register') {
-        // Get the correct canonical path to add operation.
-        $path = $entity->getLinkTemplate('canonical') . "/$machine_name";
+      if ($entity->hasViewBuilderClass() && $entity->hasLinkTemplate('canonical')) {
         $default_handler_class = $entity->getHandlerClasses()['form']['default'];
         $entity->setFormClass($machine_name, $default_handler_class)
-          ->setLinkTemplate($machine_name, $path);
+          ->setLinkTemplate($machine_name, "/{$entity->id()}/{{$entity_type}}/$machine_name");
       }
     }
   }
@@ -34,19 +38,20 @@ function form_mode_manager_entity_type_alter(array &$entity_types) {
 /**
  * Implements hook_entity_operation().
  */
-function form_mode_manager_entity_operation(\Drupal\Core\Entity\EntityInterface $entity) {
+function form_mode_manager_entity_operation(EntityInterface $entity) {
   $operations = [];
-  $form_modes = \Drupal::service('entity_display.repository')->getAllFormModes();
   $account = \Drupal::currentUser();
-  if (isset($form_modes[$entity->getEntityTypeId()])) {
-    $current_entity_operations = $form_modes[$entity->getEntityTypeId()];
-    foreach ($current_entity_operations as $machine_name => $form_mode) {
-      if ($machine_name != 'register' && ($account->hasPermission("use {$form_mode['id']} form mode") && $entity->hasLinkTemplate($machine_name))) {
+  foreach (\Drupal::service('entity_display.repository')->getAllFormModes() as $entity_type_id => $display_modes) {
+    $modes_enable = \Drupal::service('form_display.manager')->getActiveDisplays($entity_type_id);
+    $active_modes = array_intersect_key($display_modes, $modes_enable);
+    unset($active_modes['register']);
+    foreach ($active_modes as $machine_name => $mode) {
+      if ($account->hasPermission("use {$mode['id']} form mode") && $entity->hasLinkTemplate($machine_name)) {
         $operations += [
           $machine_name => [
-            'title' => t('Edit as @label', ['@label' => $form_mode['label']])->render(),
+            'title' => t('Edit as @form_mode_label', ['@form_mode_label' => $mode['label']])->render(),
             'url' => $entity->toUrl($machine_name),
-            'weight' => 0,
+            'weight' => 100,
           ],
         ];
       }

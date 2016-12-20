@@ -68,6 +68,19 @@ class FormModeManagerPermissions implements ContainerInjectionInterface {
   public function permissions() {
     $permissions = [];
     foreach ($this->entityDisplayRepository->getAllFormModes() as $entity_type_id => $display_modes) {
+      $permissions["use {$entity_type_id}.default form mode"] = [
+        'title' => $this->translationManager->translate('Use default form mode for <b>@entity_type_id</b> entity', [
+          '@entity_type_id' => $entity_type_id,
+          '@form_mode' => $entity_type_id,
+        ]),
+        'description' => [
+          '#prefix' => '<em>',
+          '#markup' => $this->translationManager->translate('Warning: This permission may have security implications depending on how the <b>@entity_type_id</b> entity is configured.', [
+            '@entity_type_id' => $entity_type_id,
+          ]),
+          '#suffix' => '</em>',
+        ],
+      ];
       foreach ($display_modes as $machine_name => $form_display) {
         if ($machine_name != 'register') {
           $form_modes_storage = $this->entityTypeManager->getStorage('entity_form_mode');

@@ -38,20 +38,6 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
   protected $account;
 
   /**
-   * Get formModeMachineName.
-   *
-   * @param array $form_display
-   *   An array represent needed Form mode for an entity.
-   *
-   * @return string
-   *   The form mode machine name without prefixe of,
-   *   entity (entity.form_mode_name).
-   */
-  public function getFormModeMachineName(array $form_display) {
-    return preg_replace('/^.*\./', '', $form_display['id']);
-  }
-
-  /**
    * Constructs a NodeController object.
    *
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
@@ -97,13 +83,19 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
     $build = [
       '#theme' => 'form_mode_manager_add_list',
       '#cache' => [
-        'tags' => $this->entityTypeManager()->getDefinition($entity_type->getBundleEntityType())->getListCacheTags(),
+        'tags' => $this->entityTypeManager()
+          ->getDefinition($entity_type->getBundleEntityType())
+          ->getListCacheTags(),
       ],
     ];
 
     $content = [];
-    foreach ($this->entityTypeManager()->getStorage($entity_type->getBundleEntityType())->loadMultiple() as $bundle) {
-      $access = $this->entityTypeManager()->getAccessControlHandler($entity_type->id())->createAccess($bundle->id(), NULL, [], TRUE);
+    foreach ($this->entityTypeManager()
+               ->getStorage($entity_type->getBundleEntityType())
+               ->loadMultiple() as $bundle) {
+      $access = $this->entityTypeManager()
+        ->getAccessControlHandler($entity_type->id())
+        ->createAccess($bundle->id(), NULL, [], TRUE);
       if ($access->isAllowed()) {
         $content[$bundle->id()] = $bundle;
       }
@@ -111,9 +103,12 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
     }
 
     // Bypass the entity/add listing if only one content type is available.
-    if (count($content) == 1) {
+    if (1 == count($content)) {
       $bundle = array_shift($content);
-      return $this->redirect("entity.add.$form_display", ['entity_bundle_id' => $bundle->id(), 'form_display' => $form_display]);
+      return $this->redirect("entity.add.$form_display", [
+        'entity_bundle_id' => $bundle->id(),
+        'form_display' => $form_display,
+      ]);
     }
 
     $build['#content'] = $content;
@@ -137,11 +132,14 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
    *   A node submission form.
    */
   public function entityAdd($entity_bundle_id, $form_display, EntityTypeInterface $entity_type) {
-    $entity_interface = $this->entityTypeManager()->getStorage($entity_type->id())->create([
-      $entity_type->getKey('bundle') => $entity_bundle_id,
-      $entity_type->getKey('uid') => $this->account->id(),
-    ]);
-    $entity_form = $this->entityFormBuilder()->getForm($entity_interface, $this->getFormModeMachineName($form_display));
+    $entity_interface = $this->entityTypeManager()
+      ->getStorage($entity_type->id())
+      ->create([
+        $entity_type->getKey('bundle') => $entity_bundle_id,
+        $entity_type->getKey('uid') => $this->account->id(),
+      ]);
+    $entity_form = $this->entityFormBuilder()
+      ->getForm($entity_interface, $this->getFormModeMachineName($form_display));
 
     return $entity_form;
   }
@@ -161,21 +159,44 @@ class FormModeManagerController extends ControllerBase implements ContainerInjec
    *   The page title.
    */
   public function addPageTitle($entity_bundle_id, $form_display, EntityTypeInterface $entity_type) {
-    $bundle = $this->entityTypeManager()->getStorage($entity_type->getBundleEntityType())->load($entity_bundle_id);
-    return $this->t('Create @name as @form_display', ['@name' => $bundle->get('name'), '@form_display' => $form_display['label']]);
+    $bundle = $this->entityTypeManager()
+      ->getStorage($entity_type->getBundleEntityType())
+      ->load($entity_bundle_id);
+    return $this->t('Create @name as @form_display', [
+      '@name' => $bundle->get('name'),
+      '@form_display' => $form_display['label'],
+    ]);
   }
 
   /**
-   * Checks access for the FormModeManager routes.
+   * Checks access for the Form Mode Manager routes.
    *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition. Useful when a single class is,
+   *   used for multiple, possibly dynamic entity types.
    * @param string $form_display
    *   The operation name identifying the form variation (form_mode).
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
    */
-  public function checkAccess($form_display) {
-    return AccessResult::allowedIfHasPermission($this->currentUser(), "use {$form_display} form mode")->cachePerPermissions();
+  public function checkAccess(EntityTypeInterface $entity_type, $form_display = 'default') {
+    return AccessResult::allowedIfHasPermission($this->currentUser(), "use {$entity_type->id()}.{$form_display} form mode")
+      ->cachePerPermissions();
+  }
+
+  /**
+   * Get Form Mode Machine Name.
+   *
+   * @param array $form_display
+   *   An array represent needed Form mode for an entity.
+   *
+   * @return string
+   *   The form mode machine name without prefixe of,
+   *   entity (entity.form_mode_name).
+   */
+  protected function getFormModeMachineName(array $form_display) {
+    return preg_replace('/^.*\./', '', $form_display['id']);
   }
 
 }

@@ -75,36 +75,52 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
    * {@inheritdoc}
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
-    $this->derivatives = array();
+    $this->derivatives = [];
     foreach ($this->entityDisplayRepository->getAllFormModes() as $entity_type_id => $display_modes) {
-      foreach ($display_modes as $machine_name => $display_mode) {
-        if ($machine_name != 'register') {
-          /* @TODO found an generic solution to get all entity listings,
-           * ATM the listing routes are declare a part in core views,
-           * Other available in entity.{$entity_type_id}.collection,
-           * Add our specific case in this list.
-           */
-          if (!in_array($entity_type_id, ['node', 'media', 'file'])) {
-            $this->derivatives["form_mode_manager.{$display_mode['id']}"] = [
-              'route_name' => "form_mode_manager.$machine_name.add_page",
-              'title' => $this->t('Add @entity_label as @form_mode', ['@form_mode' => $display_mode['label'], '@entity_label' => $entity_type_id]),
-              'appears_on' => ["entity.{$entity_type_id}.collection"],
-            ];
-          }
-          elseif ($entity_type_id == "node") {
-            $this->derivatives["form_mode_manager.{$display_mode['id']}"] = [
-              'route_name' => "form_mode_manager.$machine_name.add_page",
-              'title' => $this->t('Add @entity_label as @form_mode', ['@form_mode' => $display_mode['label'], '@entity_label' => t('content')]),
-              'appears_on' => ["system.admin_content"],
-            ];
-          }
-          elseif ($entity_type_id == "media") {
-            $this->derivatives["form_mode_manager.{$display_mode['id']}"] = [
-              'route_name' => "form_mode_manager.$machine_name.add_page",
-              'title' => $this->t('Add @entity_label as @form_mode', ['@form_mode' => $display_mode['label'], '@entity_label' => $entity_type_id]),
-              'appears_on' => ["view.media.media_page_list"],
-            ];
-          }
+      $modes_enable = \Drupal::service('form_display.manager')->getActiveDisplays($entity_type_id);
+      $active_modes = array_intersect_key($display_modes, $modes_enable);
+      unset($active_modes['register']);
+      foreach ($active_modes as $machine_name => $mode) {
+        if (!in_array($entity_type_id, ['node', 'media', 'file', 'user'])) {
+          $this->derivatives["form_mode_manager.{$mode['id']}"] = [
+            'route_name' => "form_mode_manager.$machine_name.add_page",
+            'title' => $this->t('Add @entity_label as @form_mode', [
+              '@form_mode' => $mode['label'],
+              '@entity_label' => ('block_content' === $entity_type_id) ? 'bloc' : $entity_type_id,
+            ]),
+            'appears_on' => ["entity.{$entity_type_id}.collection"],
+          ];
+        }
+        elseif ('user' === $entity_type_id) {
+          $this->derivatives["form_mode_manager.$machine_name"] = [
+            'route_name' => "admin.{$mode['id']}",
+            'title' => $this->t('Add @entity_label as @form_mode', [
+              '@form_mode' => $mode['label'],
+              '@entity_label' => $entity_type_id,
+            ]),
+            'route_parameters' => ['form_display' => $machine_name],
+            'appears_on' => ["entity.{$entity_type_id}.collection"],
+          ];
+        }
+        elseif ('node' === $entity_type_id) {
+          $this->derivatives["form_mode_manager.{$mode['id']}"] = [
+            'route_name' => "form_mode_manager.$machine_name.add_page",
+            'title' => $this->t('Add @entity_label as @form_mode', [
+              '@form_mode' => $mode['label'],
+              '@entity_label' => t('content'),
+            ]),
+            'appears_on' => ["system.admin_content"],
+          ];
+        }
+        elseif ('media' === $entity_type_id) {
+          $this->derivatives["form_mode_manager.{$mode['id']}"] = [
+            'route_name' => "form_mode_manager.$machine_name.add_page",
+            'title' => $this->t('Add @entity_label as @form_mode', [
+              '@form_mode' => $mode['label'],
+              '@entity_label' => $entity_type_id,
+            ]),
+            'appears_on' => ["view.media.media_page_list"],
+          ];
         }
       }
     }

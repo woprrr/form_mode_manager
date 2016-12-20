@@ -1,7 +1,7 @@
 services:
   form_mode_manager.route_subscriber:
     class: Drupal\form_mode_manager\Routing\FormModeManagerRouteSubscriber
-    arguments: ['@entity_type.manager', '@entity_display.repository']
+    arguments: ['@entity_type.manager', '@entity_display.repository', '@module_handler']
     tags:
       - { name: event_subscriber }
   form_mode_manager.param_converter:
@@ -9,3 +9,6 @@ services:
     arguments: ['@entity_display.repository']
     tags:
       - { name: paramconverter }
+  form_display.manager:
+    class: Drupal\form_mode_manager\FormDisplayManager
+    arguments: ['@entity_type.manager', '@config.factory']
