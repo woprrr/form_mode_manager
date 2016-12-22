@@ -9,6 +9,6 @@ services:
     arguments: ['@entity_display.repository']
     tags:
       - { name: paramconverter }
-  form_display.manager:
-    class: Drupal\form_mode_manager\FormDisplayManager
+  form_mode.manager:
+    class: Drupal\form_mode_manager\FormModeManager
     arguments: ['@entity_type.manager', '@config.factory']

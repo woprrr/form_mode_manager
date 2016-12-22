@@ -43,7 +43,7 @@ class FormModeManagerConverter implements ParamConverterInterface {
    * {@inheritdoc}
    */
   public function applies($definition, $name, Route $route) {
-    if ('form_display' === $name && (!empty($definition['type']) && 0 != preg_match('/^.*\./', $definition['type']))) {
+    if ('form_mode_name' === $name && (!empty($definition['type']) && 0 != preg_match('/^.*\./', $definition['type']))) {
       return TRUE;
     }
     return FALSE;

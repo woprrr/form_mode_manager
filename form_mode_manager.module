@@ -25,11 +25,12 @@ function form_mode_manager_entity_type_alter(array &$entity_types) {
     /* @var \Drupal\Core\Entity\EntityTypeInterface $entity */
     $entity = $entity_types[$entity_type];
     unset($display_modes['register']);
-    foreach ($display_modes as $machine_name => $form_display) {
+    foreach ($display_modes as $form_mode_name => $form_mode) {
       if ($entity->hasViewBuilderClass() && $entity->hasLinkTemplate('canonical')) {
         $default_handler_class = $entity->getHandlerClasses()['form']['default'];
-        $entity->setFormClass($machine_name, $default_handler_class)
-          ->setLinkTemplate($machine_name, "/{$entity->id()}/{{$entity_type}}/$machine_name");
+        $path = $entity->getLinkTemplate('canonical') . "/$form_mode_name";
+        $entity->setFormClass($form_mode_name, $default_handler_class)
+          ->setLinkTemplate($form_mode_name, $path);
       }
     }
   }
@@ -42,15 +43,15 @@ function form_mode_manager_entity_operation(EntityInterface $entity) {
   $operations = [];
   $account = \Drupal::currentUser();
   foreach (\Drupal::service('entity_display.repository')->getAllFormModes() as $entity_type_id => $display_modes) {
-    $modes_enable = \Drupal::service('form_display.manager')->getActiveDisplays($entity_type_id);
+    $modes_enable = \Drupal::service('form_mode.manager')->getActiveDisplays($entity_type_id);
     $active_modes = array_intersect_key($display_modes, $modes_enable);
     unset($active_modes['register']);
-    foreach ($active_modes as $machine_name => $mode) {
-      if ($account->hasPermission("use {$mode['id']} form mode") && $entity->hasLinkTemplate($machine_name)) {
+    foreach ($active_modes as $form_mode_name => $form_mode) {
+      if ($account->hasPermission("use {$form_mode['id']} form mode") && $entity->hasLinkTemplate($form_mode_name)) {
         $operations += [
-          $machine_name => [
-            'title' => t('Edit as @form_mode_label', ['@form_mode_label' => $mode['label']])->render(),
-            'url' => $entity->toUrl($machine_name),
+          $form_mode_name => [
+            'title' => t('Edit as @form_mode_name', ['@form_mode_name' => $form_mode['label']])->render(),
+            'url' => $entity->toUrl($form_mode_name)->setRouteParameter('form_mode_name', $form_mode_name),
             'weight' => 100,
           ],
         ];
@@ -89,7 +90,7 @@ function template_preprocess_form_mode_manager_add_list(&$variables) {
     foreach ($variables['content'] as $type) {
       $variables['types'][$type->id()] = [
         'type' => $type->id(),
-        'add_link' => Link::fromTextAndUrl($type->label(), new Url('entity.add.' . $variables['form_mode'],['entity_bundle_id' => $type->id(), 'form_display' => $variables['form_mode']])),
+        'add_link' => Link::fromTextAndUrl($type->label(), new Url("entity.add.{$type->getEntityType()->getProvider()}.{$variables['form_mode']}",['entity_bundle_id' => $type->id(), 'form_mode_name' => $variables['form_mode']])),
         'description' => [
           // Do verify it because "contact" entity not have description.
           '#markup' => (method_exists($type, 'getDescription')) ? $type->getDescription() : $type->label()

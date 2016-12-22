@@ -81,15 +81,15 @@ class FormModeManagerPermissions implements ContainerInjectionInterface {
           '#suffix' => '</em>',
         ],
       ];
-      foreach ($display_modes as $machine_name => $form_display) {
-        if ($machine_name != 'register') {
+      foreach ($display_modes as $form_mode_name => $form_mode) {
+        if ($form_mode_name != 'register') {
           $form_modes_storage = $this->entityTypeManager->getStorage('entity_form_mode');
-          $form_mode = $form_modes_storage->loadByProperties(['id' => $form_display['id']]);
-          $permissions["use {$form_display['id']} form mode"] = [
-            'title' => $this->translationManager->translate('Use <a href=":url">@form_mode</a> form mode with <b>@entity_type_id</b> entity', [
+          $form_mode_loaded = $form_modes_storage->loadByProperties(['id' => $form_mode['id']]);
+          $permissions["use {$form_mode['id']} form mode"] = [
+            'title' => $this->translationManager->translate('Use <a href=":url">@form_mode_label</a> form mode with <b>@entity_type_id</b> entity', [
               '@entity_type_id' => $entity_type_id,
-              '@form_mode' => $form_display['label'],
-              ':url' => $form_mode[$form_display['id']]->url(),
+              '@form_mode_label' => $form_mode['label'],
+              ':url' => $form_mode_loaded[$form_mode['id']]->url(),
             ]),
             'description' => [
               '#prefix' => '<em>',

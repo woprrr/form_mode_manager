@@ -77,50 +77,30 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
   public function getDerivativeDefinitions($base_plugin_definition) {
     $this->derivatives = [];
     foreach ($this->entityDisplayRepository->getAllFormModes() as $entity_type_id => $display_modes) {
-      $modes_enable = \Drupal::service('form_display.manager')->getActiveDisplays($entity_type_id);
+      $modes_enable = \Drupal::service('form_mode.manager')->getActiveDisplays($entity_type_id);
       $active_modes = array_intersect_key($display_modes, $modes_enable);
       unset($active_modes['register']);
-      foreach ($active_modes as $machine_name => $mode) {
-        if (!in_array($entity_type_id, ['node', 'media', 'file', 'user'])) {
-          $this->derivatives["form_mode_manager.{$mode['id']}"] = [
-            'route_name' => "form_mode_manager.$machine_name.add_page",
-            'title' => $this->t('Add @entity_label as @form_mode', [
-              '@form_mode' => $mode['label'],
-              '@entity_label' => ('block_content' === $entity_type_id) ? 'bloc' : $entity_type_id,
-            ]),
-            'appears_on' => ["entity.{$entity_type_id}.collection"],
-          ];
+      foreach ($active_modes as $form_mode_name => $form_mode) {
+        $this->derivatives["form_mode_manager.{$form_mode['id']}"] = [
+          'route_name' => "form_mode_manager.{$form_mode['id']}.add_page",
+          'title' => $this->t('Add @entity_label as @form_mode', [
+            '@form_mode' => $form_mode['label'],
+            '@entity_label' => $entity_type_id,
+          ]),
+          'route_parameters' => ['form_mode_name' => $form_mode_name],
+          'appears_on' => ["entity.{$entity_type_id}.collection"],
+        ];
+
+        if ('user' === $entity_type_id) {
+          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['route_name'] = 'admin.' . $form_mode['id'];
         }
-        elseif ('user' === $entity_type_id) {
-          $this->derivatives["form_mode_manager.$machine_name"] = [
-            'route_name' => "admin.{$mode['id']}",
-            'title' => $this->t('Add @entity_label as @form_mode', [
-              '@form_mode' => $mode['label'],
-              '@entity_label' => $entity_type_id,
-            ]),
-            'route_parameters' => ['form_display' => $machine_name],
-            'appears_on' => ["entity.{$entity_type_id}.collection"],
-          ];
+
+        if ('node' === $entity_type_id) {
+          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['appears_on'] = ['system.admin_content'];
         }
-        elseif ('node' === $entity_type_id) {
-          $this->derivatives["form_mode_manager.{$mode['id']}"] = [
-            'route_name' => "form_mode_manager.$machine_name.add_page",
-            'title' => $this->t('Add @entity_label as @form_mode', [
-              '@form_mode' => $mode['label'],
-              '@entity_label' => t('content'),
-            ]),
-            'appears_on' => ["system.admin_content"],
-          ];
-        }
-        elseif ('media' === $entity_type_id) {
-          $this->derivatives["form_mode_manager.{$mode['id']}"] = [
-            'route_name' => "form_mode_manager.$machine_name.add_page",
-            'title' => $this->t('Add @entity_label as @form_mode', [
-              '@form_mode' => $mode['label'],
-              '@entity_label' => $entity_type_id,
-            ]),
-            'appears_on' => ["view.media.media_page_list"],
-          ];
+
+        if ('media' === $entity_type_id) {
+          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['appears_on'] = ['view.media.media_page_list'];
         }
       }
     }

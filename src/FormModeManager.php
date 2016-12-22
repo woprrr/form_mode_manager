@@ -8,7 +8,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 /**
  * FormDisplayManager service.
  */
-class FormDisplayManager {
+class FormModeManager {
 
   /**
    * The entity type manager service.
@@ -48,24 +48,24 @@ class FormDisplayManager {
    */
   public function getActiveDisplays($entity_type_id) {
     $load_ids = [];
-    $form_display_id = [];
+    $form_mode_ids = [];
     /** @var \Drupal\Core\Config\Entity\ConfigEntityType $entity_type */
     $entity_type = $this->entityTypeManager->getDefinition('entity_form_display');
     $config_prefix = $entity_type->getConfigPrefix();
     $ids = $this->configFactory->listAll($config_prefix . '.' . $entity_type_id . '.');
     foreach ($ids as $id) {
       $config_id = str_replace($config_prefix . '.', '', $id);
-      list(,, $display_mode) = explode('.', $config_id);
-      if ($display_mode != 'default') {
+      list(,, $form_mode_name) = explode('.', $config_id);
+      if ($form_mode_name != 'default') {
         $load_ids[] = $config_id;
       }
     }
 
-    /** @var \Drupal\Core\Entity\Entity\EntityFormDisplay $mode */
-    foreach ($this->entityTypeManager->getStorage($entity_type->id())->loadMultiple($load_ids) as $mode) {
-      $form_display_id[$mode->getMode()] = $mode;
+    /** @var \Drupal\Core\Entity\Entity\EntityFormDisplay $form_mode */
+    foreach ($this->entityTypeManager->getStorage($entity_type->id())->loadMultiple($load_ids) as $form_mode) {
+      $form_mode_ids[$form_mode->getMode()] = $form_mode;
     }
-    return $form_display_id;
+    return $form_mode_ids;
   }
 
 }

@@ -71,19 +71,19 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
     $this->derivatives = [];
-
     foreach ($this->entityDisplayRepository->getAllFormModes() as $entity_type_id => $display_modes) {
-      $modes_enable = \Drupal::service('form_display.manager')->getActiveDisplays($entity_type_id);
+      $modes_enable = \Drupal::service('form_mode.manager')->getActiveDisplays($entity_type_id);
       $active_modes = array_intersect_key($display_modes, $modes_enable);
       unset($active_modes['register']);
-      foreach ($active_modes as $machine_name => $mode) {
-        $this->derivatives["form_mode_manager.{$mode['id']}.task_tab"] = [
-          'route_name' => "entity." . $mode['id'],
-          'title' => $this->t('Edit as @form_mode', ['@form_mode' => $mode['label']]),
+      foreach ($active_modes as $form_mode_name => $form_mode) {
+        $this->derivatives["form_mode_manager.{$form_mode['id']}.task_tab"] = [
+          'route_name' => "entity." . $form_mode['id'],
+          'title' => $this->t('Edit as @form_mode', ['@form_mode' => $form_mode['label']]),
           'base_route' => "entity.$entity_type_id.canonical",
         ];
       }
     }
+
     return $this->derivatives;
   }
 
