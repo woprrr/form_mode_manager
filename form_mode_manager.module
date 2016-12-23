@@ -51,7 +51,7 @@ function form_mode_manager_entity_operation(EntityInterface $entity) {
         $operations += [
           $form_mode_name => [
             'title' => t('Edit as @form_mode_name', ['@form_mode_name' => $form_mode['label']])->render(),
-            'url' => $entity->toUrl($form_mode_name)->setRouteParameter('form_mode_name', $form_mode_name),
+            'url' => $entity->toUrl($form_mode_name),
             'weight' => 100,
           ],
         ];
