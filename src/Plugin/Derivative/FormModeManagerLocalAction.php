@@ -102,6 +102,14 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
         if ('media' === $entity_type_id) {
           $this->derivatives["form_mode_manager.{$form_mode['id']}"]['appears_on'] = ['view.media.media_page_list'];
         }
+
+        if ('taxonomy_term' === $entity_type_id) {
+          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['appears_on'] = ['entity.taxonomy_vocabulary.overview_form'];
+          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['title'] = $this->t('Add @entity_label as @form_mode', [
+            '@form_mode' => $form_mode['label'],
+            '@entity_label' => 'term',
+          ]);
+        }
       }
     }
 

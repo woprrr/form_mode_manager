@@ -83,6 +83,9 @@ class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
             if ($edit_route = $this->getFormModeManagerEditRoute($entity_type, $form_mode, $form_mode_name)) {
               $collection->add("entity." . $form_mode['id'], $edit_route);
             }
+
+            $overview_route = $collection->get('entity.taxonomy_vocabulary.overview_form');
+            $overview_route->setDefault('_form', 'Drupal\form_mode_manager\Form\FormModeManagerOverviewTerms');
             break;
           default:
             if ($add_route = $this->getFormModeManagerAddRoute($collection, $entity_type, $form_mode, $form_mode_name)) {
