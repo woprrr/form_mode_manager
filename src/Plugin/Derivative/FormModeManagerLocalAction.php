@@ -9,6 +9,7 @@ use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\form_mode_manager\FormModeManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -40,6 +41,13 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
   protected $account;
 
   /**
+   * The entity display repository.
+   *
+   * @var \Drupal\form_mode_manager\FormModeManager
+   */
+  protected $formModeManager;
+
+  /**
    * Constructs a FormModeManagerLocalAction object.
    *
    * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
@@ -52,11 +60,12 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
    *   (optional) Run access checks for this account. Defaults to the current
    *   user.
    */
-  public function __construct(RouteProviderInterface $route_provider, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, AccountInterface $account) {
+  public function __construct(RouteProviderInterface $route_provider, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, AccountInterface $account, FormModeManagerInterface $form_mode_manager) {
     $this->routeProvider = $route_provider;
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->account = $account;
+    $this->formModeManager = $form_mode_manager;
   }
 
   /**
@@ -67,7 +76,8 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
       $container->get('router.route_provider'),
       $container->get('entity_type.manager'),
       $container->get('entity_display.repository'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('form_mode.manager')
     );
   }
 
@@ -76,11 +86,9 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
     $this->derivatives = [];
-    foreach ($this->entityDisplayRepository->getAllFormModes() as $entity_type_id => $display_modes) {
-      $modes_enable = \Drupal::service('form_mode.manager')->getActiveDisplays($entity_type_id);
-      $active_modes = array_intersect_key($display_modes, $modes_enable);
-      unset($active_modes['register']);
-      foreach ($active_modes as $form_mode_name => $form_mode) {
+    $form_modes_definitions = $this->formModeManager->getAllFormModesDefinitions();
+    foreach ($form_modes_definitions as $entity_type_id => $form_modes) {
+      foreach ($form_modes as $form_mode_name => $form_mode) {
         $this->derivatives["form_mode_manager.{$form_mode['id']}"] = [
           'route_name' => "form_mode_manager.{$form_mode['id']}.add_page",
           'title' => $this->t('Add @entity_label as @form_mode', [

@@ -8,57 +8,24 @@
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
+use Drupal\form_mode_manager\EntityTypeInfo;
 
 /**
  * Implements hook_entity_type_alter().
- *
- * Create one operation by modes available on each entities,
- * available to use form modes. In that moment we don't need,
- * to filter modes by enable or not on entities.
  */
 function form_mode_manager_entity_type_alter(array &$entity_types) {
-
-
-  /** @var \Drupal\Core\Entity\EntityDisplayRepository[] $display_modes_list */
-  $form_modes = \Drupal::service('entity_display.repository')->getAllFormModes();
-  foreach ($form_modes as $entity_type => $display_modes) {
-    /* @var \Drupal\Core\Entity\EntityTypeInterface $entity */
-    $entity = $entity_types[$entity_type];
-    unset($display_modes['register']);
-    foreach ($display_modes as $form_mode_name => $form_mode) {
-      if ($entity->hasViewBuilderClass() && $entity->hasLinkTemplate('canonical')) {
-        $default_handler_class = $entity->getHandlerClasses()['form']['default'];
-        $path = $entity->getLinkTemplate('canonical') . "/$form_mode_name";
-        $entity->setFormClass($form_mode_name, $default_handler_class)
-          ->setLinkTemplate($form_mode_name, $path);
-      }
-    }
-  }
+  return \Drupal::service('class_resolver')
+    ->getInstanceFromDefinition(EntityTypeInfo::class)
+    ->entityTypeAlter($entity_types);
 }
 
 /**
  * Implements hook_entity_operation().
  */
 function form_mode_manager_entity_operation(EntityInterface $entity) {
-  $operations = [];
-  $account = \Drupal::currentUser();
-  foreach (\Drupal::service('entity_display.repository')->getAllFormModes() as $entity_type_id => $display_modes) {
-    $modes_enable = \Drupal::service('form_mode.manager')->getActiveDisplays($entity_type_id);
-    $active_modes = array_intersect_key($display_modes, $modes_enable);
-    unset($active_modes['register']);
-    foreach ($active_modes as $form_mode_name => $form_mode) {
-      if ($account->hasPermission("use {$form_mode['id']} form mode") && $entity->hasLinkTemplate($form_mode_name)) {
-        $operations += [
-          $form_mode_name => [
-            'title' => t('Edit as @form_mode_name', ['@form_mode_name' => $form_mode['label']])->render(),
-            'url' => $entity->toUrl($form_mode_name),
-            'weight' => 100,
-          ],
-        ];
-      }
-    }
-  }
-  return $operations;
+  return \Drupal::service('class_resolver')
+    ->getInstanceFromDefinition(EntityTypeInfo::class)
+    ->entityOperation($entity);
 }
 
 /**

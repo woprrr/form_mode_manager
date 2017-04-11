@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteSubscriberBase;
+use Drupal\form_mode_manager\FormModeManagerInterface;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -29,79 +30,81 @@ class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
   protected $entityDisplayRepository;
 
   /**
+   * The entity display repository.
+   *
+   * @var \Drupal\form_mode_manager\FormModeManager
+   */
+  protected $formModeManager;
+
+  /**
    * Constructs a new RouteSubscriber object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
    *   The entity type manager.
    * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
    *   The entity display repository.
+   * @param \Drupal\form_mode_manager\FormModeManagerInterface $form_mode_manager
+   *   The form mode manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_manager, EntityDisplayRepositoryInterface $entity_display_repository) {
+  public function __construct(EntityTypeManagerInterface $entity_manager, EntityDisplayRepositoryInterface $entity_display_repository, FormModeManagerInterface $form_mode_manager) {
     $this->entityTypeManager = $entity_manager;
     $this->entityDisplayRepository = $entity_display_repository;
+    $this->formModeManager = $form_mode_manager;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function alterRoutes(RouteCollection $collection) {
-    foreach ($this->entityDisplayRepository->getAllFormModes() as $entity_type_id => $display_modes) {
+    $form_modes_definitions = $this->formModeManager->getAllFormModesDefinitions();
+    foreach ($form_modes_definitions as $entity_type_id => $form_modes) {
       $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-      unset($display_modes['register']);
-      foreach ($display_modes as $form_mode_name => $form_mode) {
-        switch ($entity_type_id) {
-          case 'file':
-            break;
+      foreach ($form_modes as $form_mode_name => $form_mode) {
+        if ('user' === $entity_type_id) {
+          // Unregister add route.
+          if ($add_route = $this->getFormModeManagerUserAddRoute($entity_type, $form_mode, $form_mode_name)) {
+            $collection->add($form_mode['id'], $add_route);
+          }
 
-          case 'user':
-            // Unregister add route.
-            if ($add_route = $this->getFormModeManagerUserAddRoute($entity_type, $form_mode, $form_mode_name)) {
-              $collection->add($form_mode['id'], $add_route);
-            }
+          // Admin add routes.
+          if ($admin_route = $this->getFormModeManagerUserAddAdmin($entity_type, $form_mode, $form_mode_name)) {
+            $collection->add('admin.' . $form_mode['id'], $admin_route);
+          }
 
-            // Admin add routes.
-            if ($admin_route = $this->getFormModeManagerUserAddAdmin($entity_type, $form_mode, $form_mode_name)) {
-              $collection->add('admin.' . $form_mode['id'], $admin_route);
-            }
+          // Edit routes.
+          if ($edit_route = $this->getFormModeManagerEditRoute($entity_type, $form_mode, $form_mode_name)) {
+            $collection->add("entity." . $form_mode['id'], $edit_route);
+          }
+        }
+        elseif ('taxonomy_term' === $entity_type_id) {
+          if ($add_route = $this->getFormModeManagerTaxonomyAddRoute($entity_type, $form_mode, $form_mode_name)) {
+            $collection->add("entity.add." . $form_mode['id'], $add_route);
+          }
 
-            // Edit routes.
-            if ($edit_route = $this->getFormModeManagerEditRoute($entity_type, $form_mode, $form_mode_name)) {
-              $collection->add("entity." . $form_mode['id'], $edit_route);
-            }
-            break;
-          case 'taxonomy_term':
-            if ($add_route = $this->getFormModeManagerTaxonomyAddRoute($entity_type, $form_mode, $form_mode_name)) {
-              $collection->add("entity.add." . $form_mode['id'], $add_route);
-            }
+          if ($list_route = $this->getFormModeManagerListPage($collection, $entity_type, $form_mode, $form_mode_name)) {
+            // Add entity type list page specific to form_modes.
+            $collection->add("form_mode_manager.{$form_mode['id']}.add_page", $list_route);
+          }
 
-            if ($list_route = $this->getFormModeManagerListPage($collection, $entity_type, $form_mode, $form_mode_name)) {
-              // Add entity type list page specific to form_modes.
-              $collection->add("form_mode_manager.{$form_mode['id']}.add_page", $list_route);
-            }
+          // Edit routes.
+          if ($edit_route = $this->getFormModeManagerEditRoute($entity_type, $form_mode, $form_mode_name)) {
+            $collection->add("entity." . $form_mode['id'], $edit_route);
+          }
+        }
+        else {
+          if ($add_route = $this->getFormModeManagerAddRoute($collection, $entity_type, $form_mode, $form_mode_name)) {
+            $collection->add("entity.add." . $form_mode['id'], $add_route);
+          }
 
-            // Edit routes.
-            if ($edit_route = $this->getFormModeManagerEditRoute($entity_type, $form_mode, $form_mode_name)) {
-              $collection->add("entity." . $form_mode['id'], $edit_route);
-            }
+          if ($list_route = $this->getFormModeManagerListPage($collection, $entity_type, $form_mode, $form_mode_name)) {
+            // Add entity type list page specific to form_modes.
+            $collection->add("form_mode_manager.{$form_mode['id']}.add_page", $list_route);
+          }
 
-            $overview_route = $collection->get('entity.taxonomy_vocabulary.overview_form');
-            $overview_route->setDefault('_form', 'Drupal\form_mode_manager\Form\FormModeManagerOverviewTerms');
-            break;
-          default:
-            if ($add_route = $this->getFormModeManagerAddRoute($collection, $entity_type, $form_mode, $form_mode_name)) {
-              $collection->add("entity.add." . $form_mode['id'], $add_route);
-            }
-
-            if ($list_route = $this->getFormModeManagerListPage($collection, $entity_type, $form_mode, $form_mode_name)) {
-              // Add entity type list page specific to form_modes.
-              $collection->add("form_mode_manager.{$form_mode['id']}.add_page", $list_route);
-            }
-
-            // Edit routes.
-            if ($edit_route = $this->getFormModeManagerEditRoute($entity_type, $form_mode, $form_mode_name)) {
-              $collection->add("entity." . $form_mode['id'], $edit_route);
-            }
-            break;
+          // Edit routes.
+          if ($edit_route = $this->getFormModeManagerEditRoute($entity_type, $form_mode, $form_mode_name)) {
+            $collection->add("entity." . $form_mode['id'], $edit_route);
+          }
         }
       }
     }

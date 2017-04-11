@@ -4,6 +4,7 @@ namespace Drupal\form_mode_manager\ParamConverter;
 
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\ParamConverter\ParamConverterInterface;
+use Drupal\form_mode_manager\FormModeManagerInterface;
 use Symfony\Component\Routing\Route;
 
 /**
@@ -14,18 +15,18 @@ class FormModeManagerConverter implements ParamConverterInterface {
   /**
    * The entity display repository.
    *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
+   * @var \Drupal\form_mode_manager\FormModeManager
    */
-  protected $entityDisplayRepository;
+  protected $formModeManager;
 
   /**
    * Constructs a new FormModeManagerConverter.
    *
-   * @param EntityDisplayRepositoryInterface $entity_display_repository
-   *   The language manager.
+   * @param \Drupal\form_mode_manager\FormModeManagerInterface $form_mode_manager
+   *   The form mode manager.
    */
-  public function __construct(EntityDisplayRepositoryInterface $entity_display_repository) {
-    $this->entityDisplayRepository = $entity_display_repository;
+  public function __construct(FormModeManagerInterface $form_mode_manager) {
+    $this->formModeManager = $form_mode_manager;
   }
 
   /**
@@ -33,7 +34,7 @@ class FormModeManagerConverter implements ParamConverterInterface {
    */
   public function convert($value, $definition, $name, array $defaults) {
     if ($entity_form = $this->getEntityForm($defaults, $definition)) {
-      return $this->entityDisplayRepository->getFormModes($entity_form)[$value];
+      return $this->formModeManager->getFormModesByEntity($entity_form)[$value];
     }
 
     return $value;

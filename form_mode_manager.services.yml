@@ -1,14 +1,14 @@
 services:
   form_mode_manager.route_subscriber:
     class: Drupal\form_mode_manager\Routing\FormModeManagerRouteSubscriber
-    arguments: ['@entity_type.manager', '@entity_display.repository', '@module_handler']
+    arguments: ['@entity_type.manager', '@entity_display.repository', '@form_mode.manager']
     tags:
       - { name: event_subscriber }
   form_mode_manager.param_converter:
     class: Drupal\form_mode_manager\ParamConverter\FormModeManagerConverter
-    arguments: ['@entity_display.repository']
+    arguments: ['@form_mode.manager']
     tags:
       - { name: paramconverter }
   form_mode.manager:
     class: Drupal\form_mode_manager\FormModeManager
-    arguments: ['@entity_type.manager', '@config.factory']
+    arguments: ['@entity_type.manager', '@config.factory', '@entity_display.repository', '@entity_type.bundle.info']
