@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Route;
 
 /**
  * Converter for form_mode_manager routes.
+ * @todo This is only used in list context now, we need to develop new list before.
  */
 class FormModeManagerConverter implements ParamConverterInterface {
 
@@ -33,8 +34,10 @@ class FormModeManagerConverter implements ParamConverterInterface {
    * {@inheritdoc}
    */
   public function convert($value, $definition, $name, array $defaults) {
-    if ($entity_form = $this->getEntityForm($defaults, $definition)) {
-      return $this->formModeManager->getFormModesByEntity($entity_form)[$value];
+    $entity_type_id = $defaults['_route_object']->getOption('_form_mode_manager_entity_type_id');
+    $form_mode_id = $entity_type_id . '.' . $value;
+    if ($form_mode_id === $defaults['_entity_form'] && $entity_type_id) {
+      return $this->formModeManager->getFormModesByEntity($entity_type_id)[$value];
     }
 
     return $value;
@@ -66,11 +69,12 @@ class FormModeManagerConverter implements ParamConverterInterface {
    *   Extract the entity_type_id of current entity.
    */
   protected function getEntityForm(array $defaults, array $definition) {
-    if (isset($defaults['_entity_form'])) {
+    kint($defaults);
+    kint($definition);
+    $entity_form = $defaults['_entity_form'];
+    $form_mode_id = $defaults['_route_object']->getOption('_form_mode_manager_entity_type_id') . '.' . $defaults['form_mode_name'];
+    if ($entity_form === $form_mode_id) {
       return explode('.', $defaults['_entity_form'])[0];
-    }
-    elseif (0 != preg_match('/^.*\./', $definition['type'])) {
-      return $defaults['_route_object']->getDefault('entity_type')->id();
     }
 
     return FALSE;

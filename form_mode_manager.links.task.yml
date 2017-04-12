@@ -1,3 +1,3 @@
-form_mode_manager.action_links:
+form_mode_manager.entities:
   deriver: 'Drupal\form_mode_manager\Plugin\Derivative\FormModeManagerLocalTasks'
   weight: 100

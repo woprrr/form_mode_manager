@@ -6,9 +6,12 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\form_mode_manager\FormModeManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -38,17 +41,29 @@ class EntityFormModeController extends ControllerBase implements ContainerInject
   protected $account;
 
   /**
+   * The entity display repository.
+   *
+   * @var \Drupal\form_mode_manager\FormModeManager
+   */
+  protected $formModeManager;
+
+  /**
    * Constructs a NodeController object.
+   *
+   * @TODO Delete all unused services.
    *
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
    *   The date formatter service.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
+   * @param \Drupal\form_mode_manager\FormModeManagerInterface $form_mode_manager
+   *   The form mode manager.
    */
-  public function __construct(DateFormatterInterface $date_formatter, RendererInterface $renderer, AccountInterface $account) {
+  public function __construct(DateFormatterInterface $date_formatter, RendererInterface $renderer, AccountInterface $account, FormModeManagerInterface $form_mode_manager) {
     $this->dateFormatter = $date_formatter;
     $this->renderer = $renderer;
     $this->account = $account;
+    $this->formModeManager = $form_mode_manager;
   }
 
   /**
@@ -58,12 +73,15 @@ class EntityFormModeController extends ControllerBase implements ContainerInject
     return new static(
       $container->get('date.formatter'),
       $container->get('renderer'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('form_mode.manager')
     );
   }
 
   /**
    * Displays add content links for available entity types.
+   *
+   * @TODO TO BE CHANGED WITH NEW METHOD.
    *
    * Redirects to entity/add/[bundle] if only one content type is available.
    *
@@ -90,12 +108,8 @@ class EntityFormModeController extends ControllerBase implements ContainerInject
     ];
 
     $content = [];
-    foreach ($this->entityTypeManager()
-               ->getStorage($entity_type->getBundleEntityType())
-               ->loadMultiple() as $bundle) {
-      $access = $this->entityTypeManager()
-        ->getAccessControlHandler($entity_type->id())
-        ->createAccess($bundle->id(), NULL, [], TRUE);
+    foreach ($this->entityTypeManager()->getStorage($entity_type->getBundleEntityType())->loadMultiple() as $bundle) {
+      $access = $this->entityTypeManager()->getAccessControlHandler($entity_type->id())->createAccess($bundle->id(), NULL, [], TRUE);
       if ($access->isAllowed()) {
         $content[$bundle->id()] = $bundle;
       }
@@ -105,7 +119,7 @@ class EntityFormModeController extends ControllerBase implements ContainerInject
     // Bypass the entity/add listing if only one content type is available.
     if (1 == count($content)) {
       $bundle = array_shift($content);
-      return $this->redirect("entity.add.{$entity_type->id()}.$form_mode_name", [
+      return $this->redirect("entity.{$entity_type->getBundleEntityType()}.add_form_$form_mode_name", [
         'entity_bundle_id' => $bundle->id(),
         'form_mode_name' => $form_mode_name,
       ]);
@@ -120,6 +134,8 @@ class EntityFormModeController extends ControllerBase implements ContainerInject
   /**
    * Provides the node submission form.
    *
+   * @TODO Optimize function.
+   *
    * @param string $entity_bundle_id
    *   The id of entity bundle from the first route parameter.
    * @param array $form_mode_name
@@ -131,21 +147,31 @@ class EntityFormModeController extends ControllerBase implements ContainerInject
    * @return array
    *   A node submission form.
    */
-  public function entityAdd($entity_bundle_id, $form_mode_name, EntityTypeInterface $entity_type) {
-    $entity_interface = $this->entityTypeManager()
-      ->getStorage($entity_type->id())
-      ->create([
-        $entity_type->getKey('bundle') => $entity_bundle_id,
-        $entity_type->getKey('uid') => $this->account->id(),
+  public function entityAdd(RouteMatchInterface $route_match) {
+    // On check le context (une route de add sans entity dans la route ou un edit avec une entity dans la route).
+    /* @var \Drupal\Core\Entity\EntityInterface $entity */
+    $entity = $this->getEntityFromRouteMatch($route_match);
+    if(empty($entity)) {
+      $route_entity_type_info = $this->getEntityTypeFromRouteMatch($route_match);
+      /* @var \Drupal\Core\Entity\EntityInterface $entity */
+      $entity = $this->entityTypeManager()->getStorage($route_entity_type_info['entity_type_id'])->create([
+        $route_entity_type_info['entity_key'] => $route_entity_type_info['bundle'],
       ]);
-    $entity_form = $this->entityFormBuilder()
-      ->getForm($entity_interface, $this->getFormModeMachineName($form_mode_name));
+    }
 
-    return $entity_form;
+    $form_mode_id = $this->getFormModeMachineName($route_match->getRouteObject()->getDefault('_entity_form'));
+    $operation = empty($form_mode_id) ? 'default' : $form_mode_id;
+    if ($entity instanceof EntityInterface) {
+      return $this->entityFormBuilder()->getForm($entity, $operation);
+    }
+
+    throw new \Exception('Invalide entity passed or inexistant form mode');
   }
 
   /**
    * The _title_callback for the entity.add routes.
+   *
+   * @TODO Refactor if/else part.
    *
    * @param string $entity_bundle_id
    *   The id of entity bundle from the first route parameter.
@@ -158,18 +184,36 @@ class EntityFormModeController extends ControllerBase implements ContainerInject
    * @return string
    *   The page title.
    */
-  public function addPageTitle($entity_bundle_id, $form_mode_name, EntityTypeInterface $entity_type) {
-    $bundle = $this->entityTypeManager()
-      ->getStorage($entity_type->getBundleEntityType())
-      ->load($entity_bundle_id);
+  public function addPageTitle(RouteMatchInterface $route_match) {
+    // Check context of route (it's a add-form route if the route haven't any,
+    // entity from routeMatch of edit-form if we have object from route.
+    /* @var \Drupal\Core\Entity\EntityInterface $entity */
+    $entity = $this->getEntityFromRouteMatch($route_match);
+    if (empty($entity)) {
+      $route_entity_type_info = $this->getEntityTypeFromRouteMatch($route_match);
+      /* @var \Drupal\Core\Entity\EntityTypeInterface $bundle */
+      $bundle = $this->entityTypeManager()
+        ->getStorage($route_entity_type_info['bundle_entity_type'])
+        ->load($route_entity_type_info['bundle']);
+    } else {
+      /* @var \Drupal\Core\Entity\EntityTypeInterface $bundle */
+      $bundle = $this->entityTypeManager()
+        ->getStorage($route_match->getRouteObject()->getOption('_form_mode_manager_bundle_entity_type_id'))
+        ->load($entity->bundle());
+    }
+
+    // @TODO Refactor to found better.
+    $form_mode_label = isset($route_entity_type_info) ? $route_entity_type_info['form_mode']['label'] : $route_match->getRouteObject()->getOption('parameters')['form_mode']['label'];
     return $this->t('Create @name as @form_mode_label', [
       '@name' => $bundle->get('name'),
-      '@form_mode_label' => $form_mode_name['label'],
+      '@form_mode_label' => $form_mode_label,
     ]);
   }
 
   /**
    * Checks access for the Form Mode Manager routes.
+   *
+   * @TODO check permission after refactor only...
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition. Useful when a single class is,
@@ -180,23 +224,71 @@ class EntityFormModeController extends ControllerBase implements ContainerInject
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
    */
-  public function checkAccess(EntityTypeInterface $entity_type, $form_mode_name = 'default') {
-    return AccessResult::allowedIfHasPermission($this->currentUser(), "use {$entity_type->id()}.{$form_mode_name} form mode")
-      ->cachePerPermissions();
+  public function checkAccess(RouteMatchInterface $route_match) {
+    return AccessResult::allowed();
   }
 
   /**
    * Get Form Mode Machine Name.
    *
-   * @param array $form_mode
-   *   An array represent needed Form mode for an entity.
+   *
+   * @TODO Move it in FormModeManager service.
+   *
+   * @param string $form_mode_id
+   *   Machine name of form mode.
    *
    * @return string
    *   The form mode machine name without prefixe of,
    *   entity (entity.form_mode_name).
    */
-  protected function getFormModeMachineName(array $form_mode) {
-    return preg_replace('/^.*\./', '', $form_mode['id']);
+  protected function getFormModeMachineName($form_mode_id) {
+    return preg_replace('/^.*\./', '', $form_mode_id);
+  }
+
+  /**
+   * Retrieves entity from route match.
+   *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The route match.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   *   The entity object as determined from the passed-in route match.
+   */
+  protected function getEntityFromRouteMatch(RouteMatchInterface $route_match) {
+    $parameter_name = $route_match->getRouteObject()->getOption('_form_mode_manager_entity_type_id');
+    $entity = $route_match->getParameter($parameter_name);
+    return $entity;
+  }
+
+  /**
+   * Retrieves entity from route match.
+   *
+   * @TODO TO Refactor / simplify...
+   * 
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The route match.
+   *
+   * @return array
+   *   The entity object as determined from the passed-in route match.
+   */
+  protected function getEntityTypeFromRouteMatch(RouteMatchInterface $route_match) {
+    // On récupéres toutes les datas necessaire depuis la route object.
+    // On ce sert plus du param converter car les routes sont toutes identiques et c'est bad ...
+    $route = $route_match->getRouteObject();
+    $entity_type_id = $route->getOption('_form_mode_manager_entity_type_id');
+    $bundle_entity_type_id = $route->getOption('_form_mode_manager_bundle_entity_type_id');
+    $form_mode = $this->getFormModeMachineName($route->getDefault('_entity_form'));
+    $bundle = $route_match->getParameter($bundle_entity_type_id);
+    $form_mode_definition = $this->formModeManager->getActiveDisplaysByBundle($entity_type_id, $bundle);
+    $entity_type_key = $this->entityTypeManager()->getDefinition($entity_type_id)->getKey('bundle');
+
+    return [
+      'bundle' => $bundle,
+      'bundle_entity_type' => $bundle_entity_type_id,
+      'entity_key' => $entity_type_key,
+      'entity_type_id' => $entity_type_id,
+      'form_mode' => $form_mode_definition[$entity_type_id][$form_mode],
+    ];
   }
 
 }

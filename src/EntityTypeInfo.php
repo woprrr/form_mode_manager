@@ -83,11 +83,18 @@ class EntityTypeInfo implements ContainerInjectionInterface {
       /* @var \Drupal\Core\Entity\EntityTypeInterface $entity_definition */
       if ($entity_definition = $entity_types[$entity_type_id]) {
         $form_modes = $this->formModeManager->getFormModesIdByEntity($entity_type_id);
-        $default_form = $entity_definition->getHandlerClasses()['form']['default'];
+        if (($entity_definition->getFormClass('default') || $entity_definition->getFormClass('edit')) && $entity_definition->hasLinkTemplate('edit-form')) {
+          $entity_definition->setLinkTemplate('form-modes-list', "/form-mode-manager/$entity_type_id/{{$entity_type_id}}");
+        }
         foreach ($form_modes as $form_mode_name) {
-          $path = $this->formModeManager->getFormModeManagerPath($entity_definition, $form_mode_name);
-          $entity_definition->setFormClass($form_mode_name, $default_form)
-            ->setLinkTemplate($form_mode_name, $path);
+          // Ajout du form handler basé sur la définition de base.
+          if ($default_form = $entity_definition->getFormClass('default')) {
+            $entity_definition->setFormClass($form_mode_name, $default_form);
+          }
+          // Ajout de l'opération d'entité dans le context "edit".
+          if ($entity_definition->getFormClass($form_mode_name) && $entity_definition->hasLinkTemplate('edit-form')) {
+            $entity_definition->setLinkTemplate("edit-form-$form_mode_name", $entity_definition->getLinkTemplate('edit-form') . '/{form_mode_name}');
+          }
         }
       }
     }
@@ -113,14 +120,11 @@ class EntityTypeInfo implements ContainerInjectionInterface {
       && $active_modes = array_intersect_key($form_modes, $active_form_modes[$entity_type_id])
     ) {
       foreach ($active_modes as $form_mode_name => $form_mode) {
-        if ($this->currentUser->hasPermission("use {$form_mode['id']} form mode") && $entity->hasLinkTemplate($form_mode_name)) {
+        if ($this->currentUser->hasPermission("use {$form_mode['id']} form mode") && $entity->hasLinkTemplate("edit-form-$form_mode_name")) {
           $operations += [
             $form_mode_name => [
               'title' => $this->t('Edit as @form_mode_name', ['@form_mode_name' => $form_mode['label']])->render(),
-              'url' => $entity->toUrl($form_mode_name)
-                ->setRouteParameters([
-                  $entity_type_id => $entity->id(),
-                ]),
+              'url' => $entity->toUrl("edit-form-$form_mode_name"),
               'weight' => 100,
             ],
           ];
