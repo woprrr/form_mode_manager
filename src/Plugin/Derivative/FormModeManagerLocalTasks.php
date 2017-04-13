@@ -101,10 +101,10 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
 
       foreach ($form_modes as $form_mode_name => $form_mode) {
         $this->derivatives["form_mode_manager.{$form_mode['id']}.task_tab"] = [
-            'route_name' => "entity.$entity_type_id.edit_form_$form_mode_name",
-            'title' => $this->t('Edit as @form_mode', ['@form_mode' => $form_mode['label']]),
-            'parent_id' => "form_mode_manager.entities:$entity_type_id.form_mode_manager",
-          ];
+          'route_name' => "entity.$entity_type_id.edit_form_$form_mode_name",
+          'title' => $this->t('Edit as @form_mode', ['@form_mode' => $form_mode['label']]),
+          'parent_id' => "form_mode_manager.entities:$entity_type_id.form_mode_manager",
+        ];
       }
     }
 

@@ -4,6 +4,9 @@ namespace Drupal\form_mode_manager;
 
 use Drupal\Core\Entity\EntityTypeInterface;
 
+/**
+ *
+ */
 interface FormModeManagerInterface {
 
   /**

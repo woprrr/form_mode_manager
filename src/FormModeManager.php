@@ -16,7 +16,7 @@ class FormModeManager implements FormModeManagerInterface {
   /**
    * The entity type manager service.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface;
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
@@ -60,7 +60,7 @@ class FormModeManager implements FormModeManagerInterface {
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
    *   The entity type bundle info.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EntityDisplayRepositoryInterface $entity_display_repository,  EntityTypeBundleInfoInterface $entity_type_bundle_info) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EntityDisplayRepositoryInterface $entity_display_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info) {
     $this->entityTypeManager = $entity_type_manager;
     $this->configFactory = $config_factory;
     $this->entityDisplayRepository = $entity_display_repository;
@@ -218,4 +218,21 @@ class FormModeManager implements FormModeManagerInterface {
     $form_mode_active = array_keys($this->entityDisplayRepository->getFormModeOptionsByBundle($entity_type_id, $bundle_id));
     return in_array($form_mode_machine_name, $form_mode_active);
   }
+
+  /**
+   * Get Form Mode Machine Name.
+   *
+   * @TODO Move it in FormModeManager service.
+   *
+   * @param string $form_mode_id
+   *   Machine name of form mode.
+   *
+   * @return string
+   *   The form mode machine name without prefixe of,
+   *   entity (entity.form_mode_name).
+   */
+  public function getFormModeMachineName($form_mode_id) {
+    return preg_replace('/^.*\./', '', $form_mode_id);
+  }
+
 }
