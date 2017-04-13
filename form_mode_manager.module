@@ -48,7 +48,7 @@ function form_mode_manager_theme() {
  *   An associative array containing:
  *   - content: An array of content types.
  *
- * @see \Drupal\form_mode_manager\Controller\FormModeManagerController::addPage()
+ * @see \Drupal\form_mode_manager\Controller\EntityFormModeController::addPage()
  */
 function template_preprocess_form_mode_manager_add_list(&$variables) {
   $variables['types'] = [];
@@ -57,7 +57,7 @@ function template_preprocess_form_mode_manager_add_list(&$variables) {
     foreach ($variables['content'] as $type) {
       $variables['types'][$type->id()] = [
         'type' => $type->id(),
-        'add_link' => Link::fromTextAndUrl($type->label(), new Url("entity.add.{$type->getEntityType()->getProvider()}.{$variables['form_mode']}",['entity_bundle_id' => $type->id(), 'form_mode_name' => $variables['form_mode']])),
+        'add_link' => Link::fromTextAndUrl($type->label(), new Url("entity.{$type->getEntityType()->getProvider()}.add_form_{$variables['form_mode']}",['node_type' => $type->id()])),
         'description' => [
           // Do verify it because "contact" entity not have description.
           '#markup' => (method_exists($type, 'getDescription')) ? $type->getDescription() : $type->label()

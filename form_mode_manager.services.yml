@@ -1,6 +1,6 @@
 services:
   form_mode_manager.route_subscriber:
-    class: Drupal\form_mode_manager\Routing\FormModeManagerRouteSubscriber
+    class: Drupal\form_mode_manager\Routing\RouteSubscriber
     arguments: ['@entity_type.manager', '@entity_display.repository', '@form_mode.manager']
     tags:
       - { name: event_subscriber }

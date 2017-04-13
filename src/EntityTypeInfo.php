@@ -83,17 +83,17 @@ class EntityTypeInfo implements ContainerInjectionInterface {
       /* @var \Drupal\Core\Entity\EntityTypeInterface $entity_definition */
       if ($entity_definition = $entity_types[$entity_type_id]) {
         $form_modes = $this->formModeManager->getFormModesIdByEntity($entity_type_id);
+        // Add default callback to "edit as..." task.
         if (($entity_definition->getFormClass('default') || $entity_definition->getFormClass('edit')) && $entity_definition->hasLinkTemplate('edit-form')) {
-          $entity_definition->setLinkTemplate('form-modes-list', "/form-mode-manager/$entity_type_id/{{$entity_type_id}}");
+          $entity_definition->setLinkTemplate('form-modes-links-task', "/form-mode-manager/$entity_type_id/{{$entity_type_id}}");
         }
         foreach ($form_modes as $form_mode_name) {
-          // Ajout du form handler basé sur la définition de base.
           if ($default_form = $entity_definition->getFormClass('default')) {
             $entity_definition->setFormClass($form_mode_name, $default_form);
           }
-          // Ajout de l'opération d'entité dans le context "edit".
+          // Add one entity operation for "edit" context.
           if ($entity_definition->getFormClass($form_mode_name) && $entity_definition->hasLinkTemplate('edit-form')) {
-            $entity_definition->setLinkTemplate("edit-form-$form_mode_name", $entity_definition->getLinkTemplate('edit-form') . '/{form_mode_name}');
+            $entity_definition->setLinkTemplate("edit-form-$form_mode_name", $entity_definition->getLinkTemplate('edit-form') . '/' . $form_mode_name);
           }
         }
       }

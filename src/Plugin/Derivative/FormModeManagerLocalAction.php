@@ -84,44 +84,47 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
   /**
    * {@inheritdoc}
    *
-   * @TODO We need to finish refactor of List add pages before re-enable it.
+   * @TODO Refactor this to move conditions onto FormModeManager.
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
     $this->derivatives = [];
-//    $form_modes_definitions = $this->formModeManager->getAllFormModesDefinitions();
-//    foreach ($form_modes_definitions as $entity_type_id => $form_modes) {
-//      foreach ($form_modes as $form_mode_name => $form_mode) {
-//        $this->derivatives["form_mode_manager.{$form_mode['id']}"] = [
-//          'route_name' => "form_mode_manager.{$form_mode['id']}.add_page",
-//          'title' => $this->t('Add @entity_label as @form_mode', [
-//            '@form_mode' => $form_mode['label'],
-//            '@entity_label' => $entity_type_id,
-//          ]),
-//          'route_parameters' => ['form_mode_name' => $form_mode_name],
-//          'appears_on' => ["entity.{$entity_type_id}.collection"],
-//        ];
-//
-//        if ('user' === $entity_type_id) {
-//          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['route_name'] = 'admin.' . $form_mode['id'];
-//        }
-//
-//        if ('node' === $entity_type_id) {
-//          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['appears_on'] = ['system.admin_content'];
-//        }
-//
-//        if ('media' === $entity_type_id) {
-//          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['appears_on'] = ['view.media.media_page_list'];
-//        }
-//
-//        if ('taxonomy_term' === $entity_type_id) {
-//          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['appears_on'] = ['entity.taxonomy_vocabulary.overview_form'];
-//          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['title'] = $this->t('Add @entity_label as @form_mode', [
-//            '@form_mode' => $form_mode['label'],
-//            '@entity_label' => 'term',
-//          ]);
-//        }
-//      }
-//    }
+    $form_modes_definitions = $this->formModeManager->getAllFormModesDefinitions();
+    // @TODO Remove this when user are correctly supported.
+    unset($form_modes_definitions['user']);
+    foreach ($form_modes_definitions as $entity_type_id => $form_modes) {
+      foreach ($form_modes as $form_mode_name => $form_mode) {
+        $this->derivatives["form_mode_manager.{$form_mode['id']}"] = [
+          'route_name' => "form_mode_manager.{$form_mode['id']}.add_page",
+          'title' => $this->t('Add @entity_label as @form_mode', [
+            '@form_mode' => $form_mode['label'],
+            '@entity_label' => $entity_type_id,
+          ]),
+          'route_parameters' => ['form_mode_name' => $form_mode_name],
+          'appears_on' => ["entity.{$entity_type_id}.collection"],
+        ];
+
+        // Only display this LocalAction in admin context.
+        if ('user' === $entity_type_id) {
+          //$this->derivatives["form_mode_manager.{$form_mode['id']}"]['route_name'] = 'user.admin_create.';
+        }
+
+        if ('node' === $entity_type_id) {
+          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['appears_on'] = ['system.admin_content'];
+        }
+
+        if ('media' === $entity_type_id) {
+          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['appears_on'] = ['view.media.media_page_list'];
+        }
+
+        if ('taxonomy_term' === $entity_type_id) {
+          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['appears_on'] = ['entity.taxonomy_vocabulary.overview_form'];
+          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['title'] = $this->t('Add @entity_label as @form_mode', [
+            '@form_mode' => $form_mode['label'],
+            '@entity_label' => 'term',
+          ]);
+        }
+      }
+    }
 
     return $this->derivatives;
   }

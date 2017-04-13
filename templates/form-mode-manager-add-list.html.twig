@@ -1,7 +1,23 @@
-{% extends "@node/node-add-list.html.twig" %}
 {#
 /**
  * @file
  * Theme override for form_mode_manager add_list.
+ *
+ *  @TODO Change wording of that. Variabilize 'node.type_add' onto preprocessor to use correct variable.
  */
 #}
+{% if types is not empty %}
+    <dl>
+        {% for type in types %}
+            <dt>{{ type.add_link }}</dt>
+            <dd>{{ type.description }}</dd>
+        {% endfor %}
+    </dl>
+{% else %}
+    <p>
+        {% set create_content = path('node.type_add') %}
+        {% trans %}
+        You have not created any content types yet. Go to the <a href="{{ create_content }}">content type creation page</a> to add a new content type.
+        {% endtrans %}
+    </p>
+{% endif %}

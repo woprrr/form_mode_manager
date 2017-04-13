@@ -4,7 +4,6 @@ namespace Drupal\form_mode_manager\Controller;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -15,7 +14,11 @@ use Drupal\form_mode_manager\FormModeManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Returns responses for form_mode_manager routes.
+ * Controller for entity form mode support.
+ *
+ * @see \Drupal\form_mode_manager\Routing\RouteSubscriber
+ * @see \Drupal\form_mode_manager\Plugin\Derivative\FormModeManagerLocalAction
+ * @see \Drupal\form_mode_manager\Plugin\Derivative\FormModeManagerLocalTasks
  */
 class EntityFormModeController extends ControllerBase implements ContainerInjectionInterface {
 
@@ -48,19 +51,14 @@ class EntityFormModeController extends ControllerBase implements ContainerInject
   protected $formModeManager;
 
   /**
-   * Constructs a NodeController object.
+   * Constructs a EntityFormModeController object.
    *
-   * @TODO Delete all unused services.
-   *
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
-   *   The date formatter service.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
    * @param \Drupal\form_mode_manager\FormModeManagerInterface $form_mode_manager
    *   The form mode manager.
    */
-  public function __construct(DateFormatterInterface $date_formatter, RendererInterface $renderer, AccountInterface $account, FormModeManagerInterface $form_mode_manager) {
-    $this->dateFormatter = $date_formatter;
+  public function __construct(RendererInterface $renderer, AccountInterface $account, FormModeManagerInterface $form_mode_manager) {
     $this->renderer = $renderer;
     $this->account = $account;
     $this->formModeManager = $form_mode_manager;
@@ -71,7 +69,6 @@ class EntityFormModeController extends ControllerBase implements ContainerInject
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('date.formatter'),
       $container->get('renderer'),
       $container->get('current_user'),
       $container->get('form_mode.manager')
@@ -80,8 +77,6 @@ class EntityFormModeController extends ControllerBase implements ContainerInject
 
   /**
    * Displays add content links for available entity types.
-   *
-   * @TODO TO BE CHANGED WITH NEW METHOD.
    *
    * Redirects to entity/add/[bundle] if only one content type is available.
    *
@@ -110,21 +105,19 @@ class EntityFormModeController extends ControllerBase implements ContainerInject
     $content = [];
     foreach ($this->entityTypeManager()->getStorage($entity_type->getBundleEntityType())->loadMultiple() as $bundle) {
       $access = $this->entityTypeManager()->getAccessControlHandler($entity_type->id())->createAccess($bundle->id(), NULL, [], TRUE);
-      if ($access->isAllowed()) {
-        $content[$bundle->id()] = $bundle;
+      if ($access->isAllowed() && $this->formModeManager->is_active($entity_type->id(), $bundle->id(), $form_mode_name)) {
+          $content[$bundle->id()] = $bundle;
+        $this->renderer->addCacheableDependency($build, $access);
       }
-      $this->renderer->addCacheableDependency($build, $access);
     }
 
     // Bypass the entity/add listing if only one content type is available.
     if (1 == count($content)) {
       $bundle = array_shift($content);
-      return $this->redirect("entity.{$entity_type->getBundleEntityType()}.add_form_$form_mode_name", [
-        'entity_bundle_id' => $bundle->id(),
-        'form_mode_name' => $form_mode_name,
+      return $this->redirect("entity.{$entity_type->id()}.add_form_$form_mode_name", [
+        $entity_type->getBundleEntityType() => $bundle->id(),
       ]);
     }
-
     $build['#content'] = $content;
     $build['#form_mode'] = $form_mode_name;
 
@@ -187,6 +180,7 @@ class EntityFormModeController extends ControllerBase implements ContainerInject
   public function addPageTitle(RouteMatchInterface $route_match) {
     // Check context of route (it's a add-form route if the route haven't any,
     // entity from routeMatch of edit-form if we have object from route.
+
     /* @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $this->getEntityFromRouteMatch($route_match);
     if (empty($entity)) {

@@ -13,7 +13,7 @@ use Symfony\Component\Routing\RouteCollection;
 /**
  * Subscriber for form_mode_manager routes.
  */
-class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
+class RouteSubscriber extends RouteSubscriberBase {
 
   /**
    * The entity type manager service.
@@ -61,8 +61,8 @@ class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
-  protected function getFormModeManagerListFormModes(EntityTypeInterface $entity_type) {
-    if ($form_mode_list = $entity_type->getLinkTemplate('form-modes-list')) {
+  protected function getFormModeManagerLinksTask(EntityTypeInterface $entity_type) {
+    if ($form_mode_list = $entity_type->getLinkTemplate('form-modes-links-task')) {
       $entity_type_id = $entity_type->id();
       $route = new Route($form_mode_list);
 
@@ -93,16 +93,20 @@ class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
    */
   protected function alterRoutes(RouteCollection $collection) {
     $form_modes_definitions = $this->formModeManager->getAllFormModesDefinitions();
+    // @TODO Remove this when user are correctly supported.
+    unset($form_modes_definitions['user']);
     foreach ($form_modes_definitions as $entity_type_id => $form_modes) {
       $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
       // Génération de la liste des form-modes par task.
-      if ($list_task = $this->getFormModeManagerListFormModes($entity_type)) {
+      if ($list_task = $this->getFormModeManagerLinksTask($entity_type)) {
         // Add entity type list page specific to form_modes.
-        $collection->add("entity.$entity_type_id.form_modes_list", $list_task);
+        $collection->add("entity.$entity_type_id.form_modes_links_task", $list_task);
       }
       foreach ($form_modes as $form_mode_name => $form_mode) {
         if ($entity_type->getFormClass($form_mode_name)) {
           $entity_type_id = $entity_type->id();
+
+          // @TODO Move that onto EntityTypeInfo operation definition.
           $collection_route_name = "entity.$entity_type_id.add_form";
           if ('node' === $entity_type_id) {
             $collection_route_name = $entity_type_id . '.add';
@@ -202,7 +206,7 @@ class FormModeManagerRouteSubscriber extends RouteSubscriberBase {
     }
     $route
       ->addDefaults([
-        '_controller' => '\Drupal\form_mode_manager\Controller\FormModeManagerController::addPage',
+        '_controller' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::addPage',
         '_title' => t('Add @entity_type', ['@entity_type' => $entity_type->getLabel()])->render(),
         'entity_type' => $entity_type,
       ])
