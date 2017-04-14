@@ -94,7 +94,7 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
     foreach ($form_modes_definitions as $entity_type_id => $form_modes) {
       foreach ($form_modes as $form_mode_name => $form_mode) {
         $this->derivatives["form_mode_manager.{$form_mode['id']}"] = [
-          'route_name' => "form_mode_manager.{$form_mode['id']}.add_page",
+          'route_name' => "form_mode_manager.$entity_type_id.add_page.$form_mode_name",
           'title' => $this->t('Add @entity_label as @form_mode', [
             '@form_mode' => $form_mode['label'],
             '@entity_label' => $entity_type_id,

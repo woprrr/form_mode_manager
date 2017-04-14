@@ -93,7 +93,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
           }
           // Add one entity operation for "edit" context.
           if ($entity_definition->getFormClass($form_mode_name) && $entity_definition->hasLinkTemplate('edit-form')) {
-            $entity_definition->setLinkTemplate("edit-form-$form_mode_name", $entity_definition->getLinkTemplate('edit-form') . '/' . $form_mode_name);
+            $entity_definition->setLinkTemplate("edit-form.$form_mode_name", $entity_definition->getLinkTemplate('edit-form') . '/' . $form_mode_name);
           }
         }
       }
@@ -120,11 +120,11 @@ class EntityTypeInfo implements ContainerInjectionInterface {
       && $active_modes = array_intersect_key($form_modes, $active_form_modes[$entity_type_id])
     ) {
       foreach ($active_modes as $form_mode_name => $form_mode) {
-        if ($this->currentUser->hasPermission("use {$form_mode['id']} form mode") && $entity->hasLinkTemplate("edit-form-$form_mode_name")) {
+        if ($this->currentUser->hasPermission("use {$form_mode['id']} form mode") && $entity->hasLinkTemplate("edit-form.$form_mode_name")) {
           $operations += [
             $form_mode_name => [
               'title' => $this->t('Edit as @form_mode_name', ['@form_mode_name' => $form_mode['label']])->render(),
-              'url' => $entity->toUrl("edit-form-$form_mode_name"),
+              'url' => $entity->toUrl("edit-form.$form_mode_name"),
               'weight' => 100,
             ],
           ];

@@ -116,7 +116,7 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
     // Bypass the entity/add listing if only one content type is available.
     if (1 == count($content)) {
       $bundle = array_shift($content);
-      return $this->redirect("entity.{$entity_type->id()}.add_form_$form_mode_name", [
+      return $this->redirect("entity.{$entity_type->id()}.add_form.$form_mode_name", [
         $entity_type->getBundleEntityType() => $bundle->id(),
       ]);
     }

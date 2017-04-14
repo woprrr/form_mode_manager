@@ -83,15 +83,15 @@ class RouteSubscriber extends RouteSubscriberBase {
     $entity_type_id = $entity_type->id();
     foreach ($form_modes as $form_mode_name => $form_mode) {
       if ($route = $this->getFormModeManagerAddRoute($collection, $entity_type, $form_mode)) {
-        $collection->add("entity.$entity_type_id.add_form_$form_mode_name", $route);
+        $collection->add("entity.$entity_type_id.add_form.$form_mode_name", $route);
       }
 
       if ($route = $this->getFormModeManagerEditRoute($collection, $entity_type, $form_mode)) {
-        $collection->add("entity.$entity_type_id.edit_form_$form_mode_name", $route);
+        $collection->add("entity.$entity_type_id.edit_form.$form_mode_name", $route);
       }
 
       if ($route = $this->getFormModeManagerListPageRoute($entity_type, $form_mode)) {
-        $collection->add("form_mode_manager.{$form_mode['id']}.add_page", $route);
+        $collection->add("form_mode_manager.$entity_type_id.add_page.$form_mode_name", $route);
       }
     }
   }
@@ -110,7 +110,7 @@ class RouteSubscriber extends RouteSubscriberBase {
       }
 
       if ($route = $this->getFormModeManagerEditRoute($collection, $entity_type, $form_mode)) {
-        $collection->add("entity.user.edit_form_$form_mode_name", $route);
+        $collection->add("entity.user.edit_form.$form_mode_name", $route);
       }
     }
   }
