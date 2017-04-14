@@ -4,65 +4,31 @@ namespace Drupal\form_mode_manager\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\form_mode_manager\FormModeManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
- * Defines dynamic local tasks.
+ * Defines dynamic 'FormModeManager' local tasks.
  */
 class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverInterface {
 
   use StringTranslationTrait;
 
   /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $account;
-
-  /**
-   * The entity display repository.
+   * The FormModeManager service.
    *
    * @var \Drupal\form_mode_manager\FormModeManager
    */
   protected $formModeManager;
 
   /**
-   * Constructs a new DynamicLocalTasks.
+   * Constructs a new FormModeManagerLocalTasks.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
-   *   The new entity display repository.
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   (optional) Run access checks for this account. Defaults to the current
-   *   user.
    * @param \Drupal\form_mode_manager\FormModeManagerInterface $form_mode_manager
    *   The form mode manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, AccountInterface $account, FormModeManagerInterface $form_mode_manager) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityDisplayRepository = $entity_display_repository;
-    $this->account = $account;
+  public function __construct(FormModeManagerInterface $form_mode_manager) {
     $this->formModeManager = $form_mode_manager;
   }
 
@@ -71,9 +37,6 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
    */
   public static function create(ContainerInterface $container, $base_plugin_id) {
     return new static(
-      $container->get('entity_type.manager'),
-      $container->get('entity_display.repository'),
-      $container->get('current_user'),
       $container->get('form_mode.manager')
     );
   }
@@ -84,32 +47,50 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
   public function getDerivativeDefinitions($base_plugin_definition) {
     $this->derivatives = [];
     $form_modes_definitions = $this->formModeManager->getAllFormModesDefinitions();
+    // Add Taks on each entity_types compatible.
     foreach ($form_modes_definitions as $entity_type_id => $form_modes) {
-
       $this->derivatives["form_mode_manager.$entity_type_id.default.task_tab"] = [
         'route_name' => "entity.$entity_type_id.edit_form",
         'title' => $this->t('Edit as @form_mode', ['@form_mode' => 'Default']),
         'parent_id' => "entity.$entity_type_id.edit_form",
       ];
 
+      // Add one sub-task by form-mode active.
       foreach ($form_modes as $form_mode_name => $form_mode) {
         $this->derivatives["form_mode_manager.{$form_mode['id']}.task_tab"] = [
           'route_name' => "entity.$entity_type_id.edit_form_$form_mode_name",
-          'title' => $this->t('Edit as @form_mode', ['@form_mode' => $form_mode['label']]),
+          'title' => $this->t('Edit as @form_mode', [
+            '@form_mode' => $form_mode['label'],
+          ]),
           'parent_id' => "entity.$entity_type_id.edit_form",
         ];
 
         if ('user' === $entity_type_id) {
-          $this->derivatives["form_mode_manager.{$form_mode['id']}.task_tab"] = [
-            'route_name' => "user.register.$form_mode_name",
-            'title' => $this->t('Create new account as @form_mode', ['@form_mode' => $form_mode['label']]),
-            'base_route' => "user.page",
-          ];
+          $this->setUserRegisterTask($form_mode);
         }
       }
     }
 
+    // Ensure Base Plugin Definition are added onto all derivatives.
+    foreach ($this->derivatives as &$entry) {
+      $entry += $base_plugin_definition;
+    }
+
     return $this->derivatives;
+  }
+
+  /**
+   * Set a Specific local tasks to `user.page` pages (register).
+   *
+   * @param array $form_mode
+   *   The definition array of the base plugin.
+   */
+  private function setUserRegisterTask(array $form_mode) {
+    $this->derivatives["form_mode_manager.{$form_mode['id']}.task_tab"] = [
+      'route_name' => "user.register.{$this->formModeManager->getFormModeMachineName($form_mode['id'])}",
+      'title' => $this->t('Create new account as @form_mode', ['@form_mode' => $form_mode['label']]),
+      'base_route' => "user.page",
+    ];
   }
 
 }

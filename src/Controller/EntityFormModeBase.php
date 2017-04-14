@@ -6,11 +6,13 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\form_mode_manager\FormModeManagerInterface;
+use Drupal\user\UserStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -178,8 +180,21 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
    *   The page title.
    */
   public function addPageTitle(RouteMatchInterface $route_match) {
-    // Check context of route (it's a add-form route if the route haven't any,
-    // entity from routeMatch of edit-form if we have object from route.
+    $entity_storage = $this->getEntityBundle($route_match);
+    $form_mode_label = isset($route_entity_type_info) ? $route_entity_type_info['form_mode']['label'] : $route_match->getRouteObject()->getOption('parameters')['form_mode']['label'];
+    return $this->t('Create @name as @form_mode_label', [
+      '@name' => (!$entity_storage instanceof UserStorageInterface) ? $entity_storage->get('name') : $entity_storage->getEntityType()->id(),
+      '@form_mode_label' => $form_mode_label,
+    ]);
+  }
+
+  /**
+   * Get EntityStorage of entity.
+   *
+   * @return EntityStorageInterface|EntityInterface
+   *   The storage of current entity or EntityInterface.
+   */
+  private function getEntityBundle(RouteMatchInterface $route_match) {
     /* @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $this->getEntityFromRouteMatch($route_match);
     if (empty($entity)) {
@@ -196,12 +211,13 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
         ->load($entity->bundle());
     }
 
-    // @TODO Refactor to found better.
-    $form_mode_label = isset($route_entity_type_info) ? $route_entity_type_info['form_mode']['label'] : $route_match->getRouteObject()->getOption('parameters')['form_mode']['label'];
-    return $this->t('Create @name as @form_mode_label', [
-      '@name' => $bundle->get('name'),
-      '@form_mode_label' => $form_mode_label,
-    ]);
+    if (empty($bundle)) {
+      /* @var \Drupal\Core\Entity\EntityStorageInterface $bundle */
+      $bundle = $this->entityTypeManager()
+        ->getStorage($route_match->getRouteObject()->getOption('_form_mode_manager_bundle_entity_type_id'));
+    }
+
+    return $bundle;
   }
 
   /**

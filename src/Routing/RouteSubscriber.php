@@ -192,8 +192,8 @@ class RouteSubscriber extends RouteSubscriberBase {
     if ($entity_edit_route = $collection->get("entity.{$entity_type->id()}.edit_form")) {
       $route = $this->setRoutes($entity_edit_route, $entity_type, $form_mode);
       $route->setDefaults([
-        '_controller' => '\Drupal\form_mode_manager\Controller\UserFormModeController::entityAdd',
-        '_title_callback' => '\Drupal\form_mode_manager\Controller\UserFormModeController::addPageTitle',
+        '_controller' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::entityAdd',
+        '_title_callback' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::addPageTitle',
         $entity_type->getBundleEntityType() => "{{$entity_type->getBundleEntityType()}}",
       ]);
       return $route;
