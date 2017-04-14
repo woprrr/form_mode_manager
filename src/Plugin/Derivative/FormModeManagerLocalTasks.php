@@ -85,25 +85,18 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
     $this->derivatives = [];
     $form_modes_definitions = $this->formModeManager->getAllFormModesDefinitions();
     foreach ($form_modes_definitions as $entity_type_id => $form_modes) {
-      $this->derivatives["$entity_type_id.form_mode_manager"] = [
-        'route_name' => "entity.$entity_type_id.form_modes_links_task",
-        'title' => $this->t('Edit as ...'),
-        'base_route' => "entity.$entity_type_id.canonical",
-        'weight' => 10,
-      ];
 
-      // @TODO we need to discuss about it that can duplicate "edit" tabs when we user "default" mode.
       $this->derivatives["form_mode_manager.$entity_type_id.default.task_tab"] = [
         'route_name' => "entity.$entity_type_id.edit_form",
         'title' => $this->t('Edit as @form_mode', ['@form_mode' => 'Default']),
-        'parent_id' => "form_mode_manager.entities:$entity_type_id.form_mode_manager",
+        'parent_id' => "entity.$entity_type_id.edit_form",
       ];
 
       foreach ($form_modes as $form_mode_name => $form_mode) {
         $this->derivatives["form_mode_manager.{$form_mode['id']}.task_tab"] = [
           'route_name' => "entity.$entity_type_id.edit_form_$form_mode_name",
           'title' => $this->t('Edit as @form_mode', ['@form_mode' => $form_mode['label']]),
-          'parent_id' => "form_mode_manager.entities:$entity_type_id.form_mode_manager",
+          'parent_id' => "entity.$entity_type_id.edit_form",
         ];
 
         if ('user' === $entity_type_id) {
