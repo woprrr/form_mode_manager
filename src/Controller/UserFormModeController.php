@@ -43,8 +43,9 @@ class UserFormModeController extends EntityFormModeBase implements ContainerInje
       ]);
     }
 
-    $form_mode_id = $this->getFormModeMachineName($route_match->getRouteObject()->getDefault('_entity_form'));
+    $form_mode_id = $this->getFormModeMachineName($route_match->getRouteObject()->getOption('parameters')['form_mode']['id']);
     $operation = empty($form_mode_id) ? 'default' : $form_mode_id;
+
     if ($entity instanceof EntityInterface) {
       return $this->entityFormBuilder()->getForm($entity, $operation);
     }
@@ -69,30 +70,30 @@ class UserFormModeController extends EntityFormModeBase implements ContainerInje
    *   The page title.
    */
   public function addPageTitle(RouteMatchInterface $route_match) {
-    // Check context of route (it's a add-form route if the route haven't any,
-    // entity from routeMatch of edit-form if we have object from route.
-    /* @var \Drupal\Core\Entity\EntityInterface $entity */
-    $entity = $this->getEntityFromRouteMatch($route_match);
-    if (empty($entity)) {
-      $route_entity_type_info = $this->getEntityTypeFromRouteMatch($route_match);
-      /* @var \Drupal\Core\Entity\EntityTypeInterface $bundle */
-      $bundle = $this->entityTypeManager()
-        ->getStorage($route_entity_type_info['bundle_entity_type'])
-        ->load($route_entity_type_info['bundle']);
-    }
-    else {
-      /* @var \Drupal\Core\Entity\EntityTypeInterface $bundle */
-      $bundle = $this->entityTypeManager()
-        ->getStorage($route_match->getRouteObject()->getOption('_form_mode_manager_bundle_entity_type_id'))
-        ->load($entity->bundle());
-    }
-
-    // @TODO Refactor to found better.
     $form_mode_label = isset($route_entity_type_info) ? $route_entity_type_info['form_mode']['label'] : $route_match->getRouteObject()->getOption('parameters')['form_mode']['label'];
     return $this->t('Create @name as @form_mode_label', [
-      '@name' => $bundle->get('name'),
+      '@name' => 'User',
       '@form_mode_label' => $form_mode_label,
     ]);
+  }
+
+  /**
+   * Retrieves entity from route match.
+   *
+   * @TODO TO Refactor / simplify...
+   *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The route match.
+   *
+   * @return array
+   *   The entity object as determined from the passed-in route match.
+   */
+  protected function getEntityTypeFromRouteMatch(RouteMatchInterface $route_match) {
+    $parametters = parent::getEntityTypeFromRouteMatch($route_match);
+    $form_mode = $this->getFormModeMachineName($route_match->getRouteObject()->getOption('parameters')['form_mode']['id']);
+    $form_mode_definition = $this->formModeManager->getActiveDisplays($parametters['entity_type_id']);
+    $parametters['form_mode'] = $form_mode_definition[$form_mode];
+    return $parametters;
   }
 
 }

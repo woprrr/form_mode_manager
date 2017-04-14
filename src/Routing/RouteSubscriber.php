@@ -162,7 +162,12 @@ class RouteSubscriber extends RouteSubscriberBase {
    */
   protected function getFormModeManagerUserAddAdmin(RouteCollection $collection, EntityTypeInterface $entity_type, array $form_mode) {
     if ($entity_add_admin_route = $collection->get('user.admin_create')) {
-      return $this->setRoutes($entity_add_admin_route, $entity_type, $form_mode);
+      $route = $this->setRoutes($entity_add_admin_route, $entity_type, $form_mode);
+      $route->setDefaults([
+        '_controller' => '\Drupal\form_mode_manager\Controller\UserFormModeController::entityAdd',
+        '_title_callback' => '\Drupal\form_mode_manager\Controller\UserFormModeController::addPageTitle',
+      ]);
+      return $route;
     }
   }
 
@@ -171,7 +176,12 @@ class RouteSubscriber extends RouteSubscriberBase {
    */
   protected function getFormModeManagerUserRegister(RouteCollection $collection, EntityTypeInterface $entity_type, array $form_mode) {
     if ($entity_add_register_route = $collection->get('user.register')) {
-      return $this->setRoutes($entity_add_register_route, $entity_type, $form_mode);
+      $route = $this->setRoutes($entity_add_register_route, $entity_type, $form_mode);
+      $route->setDefaults([
+        '_controller' => '\Drupal\form_mode_manager\Controller\UserFormModeController::entityAdd',
+        '_title_callback' => '\Drupal\form_mode_manager\Controller\UserFormModeController::addPageTitle',
+      ]);
+      return $route;
     }
   }
 
@@ -181,7 +191,11 @@ class RouteSubscriber extends RouteSubscriberBase {
   protected function getFormModeManagerEditRoute(RouteCollection $collection, EntityTypeInterface $entity_type, array $form_mode) {
     if ($entity_edit_route = $collection->get("entity.{$entity_type->id()}.edit_form")) {
       $route = $this->setRoutes($entity_edit_route, $entity_type, $form_mode);
-      $route->setDefault($entity_type->getBundleEntityType(), "{{$entity_type->getBundleEntityType()}}");
+      $route->setDefaults([
+        '_controller' => '\Drupal\form_mode_manager\Controller\UserFormModeController::entityAdd',
+        '_title_callback' => '\Drupal\form_mode_manager\Controller\UserFormModeController::addPageTitle',
+        $entity_type->getBundleEntityType() => "{{$entity_type->getBundleEntityType()}}",
+      ]);
       return $route;
     }
   }
@@ -278,9 +292,10 @@ class RouteSubscriber extends RouteSubscriberBase {
    */
   private function getFormModeManagerOptions(array $form_mode, EntityTypeInterface $entity_type) {
     $entity_type_id = $entity_type->id();
+    $entity_type_bundle_id = $entity_type->getBundleEntityType();
     return [
       '_form_mode_manager_entity_type_id' => $entity_type_id,
-      '_form_mode_manager_bundle_entity_type_id' => $entity_type->getBundleEntityType(),
+      '_form_mode_manager_bundle_entity_type_id' => !empty($entity_type_bundle_id) ? $entity_type_bundle_id : $entity_type_id,
       'parameters' => [
         $entity_type_id => ['type' => "entity:$entity_type_id"],
         'form_mode' => $form_mode,

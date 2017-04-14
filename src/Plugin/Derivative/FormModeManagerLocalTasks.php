@@ -105,6 +105,14 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
           'title' => $this->t('Edit as @form_mode', ['@form_mode' => $form_mode['label']]),
           'parent_id' => "form_mode_manager.entities:$entity_type_id.form_mode_manager",
         ];
+
+        if ('user' === $entity_type_id) {
+          $this->derivatives["form_mode_manager.{$form_mode['id']}.task_tab"] = [
+            'route_name' => "user.register.$form_mode_name",
+            'title' => $this->t('Create new account as @form_mode', ['@form_mode' => $form_mode['label']]),
+            'base_route' => "user.page",
+          ];
+        }
       }
     }
 
