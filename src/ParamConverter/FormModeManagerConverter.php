@@ -16,7 +16,7 @@ class FormModeManagerConverter implements ParamConverterInterface {
   /**
    * The entity display repository.
    *
-   * @var \Drupal\form_mode_manager\FormModeManager
+   * @var \Drupal\form_mode_manager\FormModeManagerInterface
    */
   protected $formModeManager;
 

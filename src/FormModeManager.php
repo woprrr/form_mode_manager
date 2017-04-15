@@ -46,7 +46,7 @@ class FormModeManager implements FormModeManagerInterface {
    *
    * @var array
    */
-  private $formModesExcluded = ['user' => 'register'];
+  public $formModesExcluded = ['user' => 'register'];
 
   /**
    * Constructs a FormDisplayManager object.
@@ -93,41 +93,21 @@ class FormModeManager implements FormModeManagerInterface {
   }
 
   /**
-   * Gets the path of specified entity type for a form mode.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type.
-   * @param string $form_mode_id
-   *   The form mode machine name.
-   *
-   * @return string
-   *   The path to use the specified form mode.
+   * {@inheritdoc}
    */
   public function getFormModeManagerPath(EntityTypeInterface $entity_type, $form_mode_id) {
     return $entity_type->getLinkTemplate('canonical') . "/" . $form_mode_id;
   }
 
   /**
-   * Gets the entity form mode info for a specific entity type.
-   *
-   * @param string $entity_type_id
-   *   The entity type.
-   *
-   * @return array
-   *   An array contain all available form mode machine name.
+   * {@inheritdoc}
    */
   public function getFormModesIdByEntity($entity_type_id) {
     return array_keys($this->getFormModesByEntity($entity_type_id));
   }
 
   /**
-   * Gets the entity form mode info for a specific entity type.
-   *
-   * @param string $entity_type_id
-   *   The entity type.
-   *
-   * @return array
-   *   An array contain all available form mode machine name.
+   * {@inheritdoc}
    */
   public function getFormModesByEntity($entity_type_id) {
     $form_modes = $this->entityDisplayRepository->getFormModes($entity_type_id);
@@ -137,13 +117,7 @@ class FormModeManager implements FormModeManagerInterface {
   }
 
   /**
-   * Gets the entity form mode info for all entity types.
-   *
-   * @param array $form_mode
-   *   A form mode collection to be filtered.
-   *
-   * @return array|null
-   *   The collection without uneeded form modes.
+   * {@inheritdoc}
    */
   public function getAllFormModesDefinitions() {
     $filtered_form_modes = [];
@@ -159,13 +133,7 @@ class FormModeManager implements FormModeManagerInterface {
   }
 
   /**
-   * Filter a form mode collection.
-   *
-   * @param array $form_mode
-   *   A form mode collection to be filtered.
-   *
-   * @return array
-   *   The collection without uneeded form modes.
+   * {@inheritdoc}
    */
   public function filterExcludedFormModes(array &$form_mode) {
     foreach ($this->formModesExcluded as $entity_type_id => $form_mode_to_exclude) {
@@ -180,19 +148,13 @@ class FormModeManager implements FormModeManagerInterface {
   }
 
   /**
-   * Check if a bundle use a form mode.
-   *
-   * @param string $bundle_id
-   *   Name of bundle.
-   *
-   * @return array|null
-   *   The form mode activated for defined bundle.
+   * {@inheritdoc}
    */
   public function getActiveDisplaysByBundle($entity_type_id, $bundle_id) {
     $form_modes = [];
     $entities_form_modes = $this->getFormModesByEntity($entity_type_id);
     foreach (array_keys($entities_form_modes) as $form_mode_machine_name) {
-      if ($this->is_active($entity_type_id, $bundle_id, $form_mode_machine_name)) {
+      if ($this->isActive($entity_type_id, $bundle_id, $form_mode_machine_name)) {
         $form_modes[$entity_type_id][$form_mode_machine_name] = $entities_form_modes[$form_mode_machine_name];
       }
     }
@@ -201,35 +163,15 @@ class FormModeManager implements FormModeManagerInterface {
   }
 
   /**
-   * Check if needed form mode is used by bundle.
-   *
-   * @param string $entity_type_id
-   *   The entity type id.
-   * @param string $bundle_id
-   *   Name of bundle for current entity.
-   * @param string $form_mode_machine_name
-   *   Machine name of form mode.
-   *
-   * @return array
-   *   The form mode activated for defined bundle,
-   *   default are forever available and can be an instance of TranslatableMarkup.
+   * {@inheritdoc}
    */
-  public function is_active($entity_type_id, $bundle_id, $form_mode_machine_name) {
+  public function isActive($entity_type_id, $bundle_id, $form_mode_machine_name) {
     $form_mode_active = array_keys($this->entityDisplayRepository->getFormModeOptionsByBundle($entity_type_id, $bundle_id));
     return in_array($form_mode_machine_name, $form_mode_active);
   }
 
   /**
-   * Get Form Mode Machine Name.
-   *
-   * @TODO Move it in FormModeManager service.
-   *
-   * @param string $form_mode_id
-   *   Machine name of form mode.
-   *
-   * @return string
-   *   The form mode machine name without prefixe of,
-   *   entity (entity.form_mode_name).
+   * {@inheritdoc}
    */
   public function getFormModeMachineName($form_mode_id) {
     return preg_replace('/^.*\./', '', $form_mode_id);

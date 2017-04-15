@@ -27,7 +27,7 @@ class FrontPage extends ControllerBase {
   public function content() {
     $entity_items = [];
     foreach ($this->fmmExampleEntityBundles as $entity_bundle) {
-      $entity_type = \Drupal::entityTypeManager()->getStorage('node_type')->load($entity_bundle);
+      $entity_type = $this->entityTypeManager()->getStorage('node_type')->load($entity_bundle);
       $entity_items['#items'][] = $this->t('<a href="@url">@label',
         [
           '@url' => Url::fromRoute('node.add', ['node_type' => $entity_type->id()])->toString(),

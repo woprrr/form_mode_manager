@@ -43,7 +43,7 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
   /**
    * The entity display repository.
    *
-   * @var \Drupal\form_mode_manager\FormModeManager
+   * @var \Drupal\form_mode_manager\FormModeManagerInterface
    */
   protected $formModeManager;
 

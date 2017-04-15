@@ -51,7 +51,7 @@ function form_mode_manager_theme() {
  *
  * @see \Drupal\form_mode_manager\Controller\EntityFormModeController::addPage()
  */
-function template_preprocess_form_mode_manager_add_list(&$variables) {
+function template_preprocess_form_mode_manager_add_list(array &$variables) {
   $variables['types'] = [];
   if (!empty($variables['content'])) {
     /** @var \Drupal\Core\Config\Entity\ConfigEntityBundleBase $type */
@@ -74,7 +74,8 @@ function template_preprocess_form_mode_manager_add_list(&$variables) {
 function form_mode_manager_entity_update(EntityInterface $entity) {
   if ($entity instanceof EntityFormDisplay) {
     $parent_entity = \Drupal::entityTypeManager()->getStorage($entity->getTargetEntityTypeId())->getEntityType();
-    // When user enable an form_mode we can create all routes/elements to use/view it on entity lists.
+    // When user enable an form_mode we can create all,
+    // routes/elements to use/view it on entity lists.
     if (!$parent_entity->hasLinkTemplate("{$entity->getMode()}") && ($entity->status() && $entity->getMode() != 'default')) {
       // @TODO Found another solution to flush specific cache to,
       // entities views listing cache each element and it's impossible,

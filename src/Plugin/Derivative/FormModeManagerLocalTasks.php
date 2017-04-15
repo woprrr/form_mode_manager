@@ -18,7 +18,7 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
   /**
    * The FormModeManager service.
    *
-   * @var \Drupal\form_mode_manager\FormModeManager
+   * @var \Drupal\form_mode_manager\FormModeManagerInterface
    */
   protected $formModeManager;
 
