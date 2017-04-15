@@ -137,7 +137,7 @@ class RouteSubscriber extends RouteSubscriberBase {
    * @param array $form_mode
    *   The operation array of form variation (form_mode).
    *
-   * @return \Symfony\Component\Routing\Route|null
+   * @return \Symfony\Component\Routing\Route
    *   The generated route, if available.
    */
   private function getFormModeManagerListPageRoute(EntityTypeInterface $entity_type, array $form_mode) {
