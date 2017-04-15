@@ -89,8 +89,6 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
   public function getDerivativeDefinitions($base_plugin_definition) {
     $this->derivatives = [];
     $form_modes_definitions = $this->formModeManager->getAllFormModesDefinitions();
-    // @TODO Remove this when user are correctly supported.
-    unset($form_modes_definitions['user']);
     foreach ($form_modes_definitions as $entity_type_id => $form_modes) {
       foreach ($form_modes as $form_mode_name => $form_mode) {
         $this->derivatives["form_mode_manager.{$form_mode['id']}"] = [
@@ -103,9 +101,9 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
           'appears_on' => ["entity.{$entity_type_id}.collection"],
         ];
 
-        // Only display this LocalAction in admin context.
         if ('user' === $entity_type_id) {
-          // $this->derivatives["form_mode_manager.{$form_mode['id']}"]['route_name'] = 'user.admin_create.';.
+          $this->derivatives["form_mode_manager.{$form_mode['id']}"]['route_name'] = "user.admin_create.$form_mode_name";
+          unset($this->derivatives["form_mode_manager.{$form_mode['id']}"]['route_parameters']);
         }
 
         if ('node' === $entity_type_id) {

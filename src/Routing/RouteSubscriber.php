@@ -112,6 +112,10 @@ class RouteSubscriber extends RouteSubscriberBase {
       if ($route = $this->getFormModeManagerEditRoute($collection, $entity_type, $form_mode)) {
         $collection->add("entity.user.edit_form.$form_mode_name", $route);
       }
+
+      if ($route = $this->getFormModeManagerListPageRoute($entity_type, $form_mode)) {
+        $collection->add("form_mode_manager.user.add_page.$form_mode_name", $route);
+      }
     }
   }
 
