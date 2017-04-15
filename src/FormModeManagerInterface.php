@@ -95,8 +95,8 @@ interface FormModeManagerInterface {
    * @param string $form_mode_machine_name
    *   Machine name of form mode.
    *
-   * @return array
-   *   All form mode activated onto bundle.
+   * @return bool
+   *   True if FormMode is activated on needed bundle.
    */
   public function isActive($entity_type_id, $bundle_id, $form_mode_machine_name);
 
