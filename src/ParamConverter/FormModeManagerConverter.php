@@ -69,8 +69,6 @@ class FormModeManagerConverter implements ParamConverterInterface {
    *   Extract the entity_type_id of current entity.
    */
   protected function getEntityForm(array $defaults, array $definition) {
-    kint($defaults);
-    kint($definition);
     $entity_form = $defaults['_entity_form'];
     $form_mode_id = $defaults['_route_object']->getOption('_form_mode_manager_entity_type_id') . '.' . $defaults['form_mode_name'];
     if ($entity_form === $form_mode_id) {

@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteSubscriberBase;
+use Drupal\Core\Routing\RoutingEvents;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\form_mode_manager\FormModeManagerInterface;
 use Symfony\Component\Routing\Route;
@@ -198,10 +199,8 @@ class RouteSubscriber extends RouteSubscriberBase {
     if ($entity_add_admin_route = $collection->get('user.admin_create')) {
       $route = $this->setRoutes($entity_add_admin_route, $entity_type, $form_mode);
       $route
-        ->setDefaults([
-          '_controller' => '\Drupal\form_mode_manager\Controller\UserFormModeController::entityAdd',
-          '_title_callback' => '\Drupal\form_mode_manager\Controller\UserFormModeController::addPageTitle',
-        ]);
+        ->setDefault('_controller', '\Drupal\form_mode_manager\Controller\UserFormModeController::entityAdd')
+        ->setDefault('_title_callback', '\Drupal\form_mode_manager\Controller\UserFormModeController::addPageTitle');
 
       return $route;
     }
@@ -225,10 +224,9 @@ class RouteSubscriber extends RouteSubscriberBase {
     if ($entity_add_register_route = $collection->get('user.register')) {
       $route = $this->setRoutes($entity_add_register_route, $entity_type, $form_mode);
       $route
-        ->setDefaults([
-          '_controller' => '\Drupal\form_mode_manager\Controller\UserFormModeController::entityAdd',
-          '_title_callback' => '\Drupal\form_mode_manager\Controller\UserFormModeController::addPageTitle',
-        ]);
+        ->setDefault('_controller', '\Drupal\form_mode_manager\Controller\UserFormModeController::entityAdd')
+        ->setDefault('_title_callback', '\Drupal\form_mode_manager\Controller\UserFormModeController::addPageTitle');
+
       return $route;
     }
     return NULL;
@@ -249,15 +247,7 @@ class RouteSubscriber extends RouteSubscriberBase {
    */
   protected function getFormModeManagerEditRoute(RouteCollection $collection, EntityTypeInterface $entity_type, array $form_mode) {
     if ($entity_edit_route = $collection->get("entity.{$entity_type->id()}.edit_form")) {
-      $route = $this->setRoutes($entity_edit_route, $entity_type, $form_mode);
-      $route
-        ->setDefaults([
-          '_controller' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::entityAdd',
-          '_title_callback' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::addPageTitle',
-          $entity_type->getBundleEntityType() => "{{$entity_type->getBundleEntityType()}}",
-        ]);
-
-      return $route;
+      return $this->setRoutes($entity_edit_route, $entity_type, $form_mode);
     }
     return NULL;
   }

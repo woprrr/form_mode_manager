@@ -5,7 +5,6 @@
  * Contains form_mode_manager.module.
  */
 
-use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
@@ -27,6 +26,15 @@ function form_mode_manager_entity_operation(EntityInterface $entity) {
   return \Drupal::service('class_resolver')
     ->getInstanceFromDefinition(EntityTypeInfo::class)
     ->entityOperation($entity);
+}
+
+/**
+ * Implements hook_entity_update().
+ */
+function form_mode_manager_entity_update(EntityInterface $entity) {
+  return \Drupal::service('class_resolver')
+    ->getInstanceFromDefinition(EntityTypeInfo::class)
+    ->entityUpdate($entity);
 }
 
 /**
@@ -64,23 +72,6 @@ function template_preprocess_form_mode_manager_add_list(array &$variables) {
           '#markup' => (method_exists($type, 'getDescription')) ? $type->getDescription() : $type->label(),
         ],
       ];
-    }
-  }
-}
-
-/**
- * Implements hook_entity_update().
- */
-function form_mode_manager_entity_update(EntityInterface $entity) {
-  if ($entity instanceof EntityFormDisplay) {
-    $parent_entity = \Drupal::entityTypeManager()->getStorage($entity->getTargetEntityTypeId())->getEntityType();
-    // When user enable an form_mode we can create all,
-    // routes/elements to use/view it on entity lists.
-    if (!$parent_entity->hasLinkTemplate("{$entity->getMode()}") && ($entity->status() && $entity->getMode() != 'default')) {
-      // @TODO Found another solution to flush specific cache to,
-      // entities views listing cache each element and it's impossible,
-      // to predict the name of entity listing.
-      drupal_flush_all_caches();
     }
   }
 }

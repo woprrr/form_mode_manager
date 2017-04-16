@@ -2,7 +2,9 @@
 
 namespace Drupal\form_mode_manager;
 
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -41,6 +43,13 @@ class EntityTypeInfo implements ContainerInjectionInterface {
   protected $formModeManager;
 
   /**
+   * The cache tags invalidator.
+   *
+   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
+   */
+  protected $cacheTagsInvalidator;
+
+  /**
    * EntityTypeInfo constructor.
    *
    * @param \Drupal\Core\Session\AccountInterface $current_user
@@ -49,11 +58,14 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    *   The entity display repository.
    * @param \Drupal\form_mode_manager\FormModeManagerInterface $form_mode_manager
    *   The form mode manager.
+   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
+   *   The cache tags invalidator.
    */
-  public function __construct(AccountInterface $current_user, EntityDisplayRepositoryInterface $entity_display_repository, FormModeManagerInterface $form_mode_manager) {
+  public function __construct(AccountInterface $current_user, EntityDisplayRepositoryInterface $entity_display_repository, FormModeManagerInterface $form_mode_manager, CacheTagsInvalidatorInterface $cache_tags_invalidator) {
     $this->entityDisplayRepository = $entity_display_repository;
     $this->currentUser = $current_user;
     $this->formModeManager = $form_mode_manager;
+    $this->cacheTagsInvalidator = $cache_tags_invalidator;
   }
 
   /**
@@ -63,7 +75,8 @@ class EntityTypeInfo implements ContainerInjectionInterface {
     return new static(
       $container->get('current_user'),
       $container->get('entity_display.repository'),
-      $container->get('form_mode.manager')
+      $container->get('form_mode.manager'),
+      $container->get('cache_tags.invalidator')
     );
   }
 
@@ -83,14 +96,11 @@ class EntityTypeInfo implements ContainerInjectionInterface {
       /* @var \Drupal\Core\Entity\EntityTypeInterface $entity_definition */
       if ($entity_definition = $entity_types[$entity_type_id]) {
         $form_modes = $this->formModeManager->getFormModesIdByEntity($entity_type_id);
-        // Add default callback to "edit as..." task.
-        if (($entity_definition->getFormClass('default') || $entity_definition->getFormClass('edit')) && $entity_definition->hasLinkTemplate('edit-form')) {
-          $entity_definition->setLinkTemplate('form-modes-links-task', "/form-mode-manager/$entity_type_id/{{$entity_type_id}}");
-        }
         foreach ($form_modes as $form_mode_name) {
           if ($default_form = $entity_definition->getFormClass('default')) {
             $entity_definition->setFormClass($form_mode_name, $default_form);
           }
+
           // Add one entity operation for "edit" context.
           if ($entity_definition->getFormClass($form_mode_name) && $entity_definition->hasLinkTemplate('edit-form')) {
             $entity_definition->setLinkTemplate("edit-form.$form_mode_name", $entity_definition->getLinkTemplate('edit-form') . '/' . $form_mode_name);
@@ -133,6 +143,28 @@ class EntityTypeInfo implements ContainerInjectionInterface {
     }
 
     return $operations;
+  }
+
+  /**
+   * Invalidate necessary tags on form mode activation .
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity on which to define an operation.
+   *
+   *   `local_action` tag correspond to menu links action blocksn
+   *    on overview entity list.
+   *   `entity_types` tag need to be invalidate to inform system of new,
+   *   Form & Link template are enabled/created on entityType basis.
+   *
+   * @see hook_entity_update()
+   */
+  public function entityUpdate(EntityInterface $entity) {
+    if ($entity instanceof EntityFormDisplay && ($entity->status() && 'default' !== $entity->getMode())) {
+      $this->cacheTagsInvalidator->invalidateTags([
+        'local_action',
+        'entity_types',
+      ]);
+    }
   }
 
 }
