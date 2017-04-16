@@ -163,6 +163,8 @@ class EntityTypeInfo implements ContainerInjectionInterface {
       $this->cacheTagsInvalidator->invalidateTags([
         'local_action',
         'entity_types',
+        'rendered',
+        'user.permissions'
       ]);
     }
   }

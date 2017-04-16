@@ -6,7 +6,6 @@ use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteSubscriberBase;
-use Drupal\Core\Routing\RoutingEvents;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\form_mode_manager\FormModeManagerInterface;
 use Symfony\Component\Routing\Route;
