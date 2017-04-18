@@ -177,4 +177,12 @@ class FormModeManager implements FormModeManagerInterface {
     return preg_replace('/^.*\./', '', $form_mode_id);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getListCacheTags() {
+    return $this->entityTypeManager->getDefinition('entity_form_display')
+      ->getListCacheTags();
+  }
+
 }

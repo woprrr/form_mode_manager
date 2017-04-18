@@ -53,6 +53,7 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
         'route_name' => "entity.$entity_type_id.edit_form",
         'title' => $this->t('Edit as @form_mode', ['@form_mode' => 'Default']),
         'parent_id' => "entity.$entity_type_id.edit_form",
+        'cache_tags' => $this->formModeManager->getListCacheTags(),
       ];
 
       // Add one sub-task by form-mode active.
@@ -63,6 +64,7 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
             '@form_mode' => $form_mode['label'],
           ]),
           'parent_id' => "entity.$entity_type_id.edit_form",
+          'cache_tags' => $this->formModeManager->getListCacheTags(),
         ];
 
         if ('user' === $entity_type_id) {

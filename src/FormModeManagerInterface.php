@@ -77,6 +77,8 @@ interface FormModeManagerInterface {
   /**
    * Gets the entity form mode info for a specific bundle.
    *
+   * @param string $entity_type_id
+   *   The entity type id.
    * @param string $bundle_id
    *   Identifier of bundle.
    *
@@ -111,5 +113,17 @@ interface FormModeManagerInterface {
    *   entity (entity.form_mode_name).
    */
   public function getFormModeMachineName($form_mode_id);
+
+  /**
+   * The list cache tags associated with form display entities.
+   *
+   * Enables code listing entities of this type to ensure that newly created
+   * entities show up immediately. This is wrapped by Form Mode Manager to,
+   * permit a more precise cache strategy and allow Form Mode Manager to,
+   * add her permissions tags.
+   *
+   * @return string[]
+   */
+  public function getListCacheTags();
 
 }

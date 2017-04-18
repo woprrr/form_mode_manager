@@ -99,6 +99,7 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
           ]),
           'route_parameters' => ['form_mode_name' => $form_mode_name],
           'appears_on' => ["entity.{$entity_type_id}.collection"],
+          'cache_tags' => $this->formModeManager->getListCacheTags(),
         ];
 
         if ('user' === $entity_type_id) {
