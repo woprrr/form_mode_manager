@@ -241,7 +241,13 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
    *   The access result.
    */
   public function checkAccess(RouteMatchInterface $route_match) {
-    return AccessResult::allowed();
+    $route = $route_match->getRouteObject();
+    $entity_type_id = $route->getOption('_form_mode_manager_entity_type_id');
+    $form_mode_id = $route->getDefault('_entity_form');
+    // #TODO Not compatible with user...
+    $bundle_id = $route_match->getParameter($entity_type_id)->bundle();
+    $cache_tags = $this->formModeManager->getListCacheTags();
+    return AccessResult::allowedIf($this->formModeManager->isActive($entity_type_id, $bundle_id, $this->formModeManager->getFormModeMachineName($form_mode_id)))->addCacheTags($cache_tags);
   }
 
   /**

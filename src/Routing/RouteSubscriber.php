@@ -267,7 +267,7 @@ class RouteSubscriber extends RouteSubscriberBase {
   private function setRoutes(Route $parent_route, EntityTypeInterface $entity_type, array $form_mode) {
     $route_defaults = array_merge($parent_route->getDefaults(), $this->getFormModeManagerDefaults($form_mode));
     $roue_options = array_merge($parent_route->getOptions(), $this->getFormModeManagerOptions($form_mode, $entity_type));
-    $route_requirements = array_merge($parent_route->getRequirements(), $this->getFormModeManagerRequirements());
+    $route_requirements = array_merge($parent_route->getRequirements(), $this->getFormModeManagerRequirements($form_mode, $entity_type));
 
     $route = new Route("{$parent_route->getPath()}/{$this->formModeManager->getFormModeMachineName($form_mode['id'])}");
     $route
@@ -364,9 +364,11 @@ class RouteSubscriber extends RouteSubscriberBase {
    * @return array
    *   Array contain requirements routes parameters.
    */
-  private function getFormModeManagerRequirements() {
+  private function getFormModeManagerRequirements(array $form_mode, EntityTypeInterface $entity_type) {
     return [
-      '_custom_access' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::checkAccess',
+      '_permission' => "use {$form_mode['id']} form mode+use {$entity_type->id()}.default form mode",
+      // @TODO For activate this found a solution generic for user.
+      //'_custom_access' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::checkAccess',
     ];
   }
 
