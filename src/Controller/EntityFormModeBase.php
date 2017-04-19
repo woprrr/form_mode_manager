@@ -241,12 +241,22 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
    *   The access result.
    */
   public function checkAccess(RouteMatchInterface $route_match) {
+    /* @var \Drupal\Core\Entity\EntityInterface $entity */
+    $entity = $this->getEntityFromRouteMatch($route_match);
     $route = $route_match->getRouteObject();
-    $entity_type_id = $route->getOption('_form_mode_manager_entity_type_id');
     $form_mode_id = $route->getDefault('_entity_form');
-    // #TODO Not compatible with user...
-    $bundle_id = $route_match->getParameter($entity_type_id)->bundle();
     $cache_tags = $this->formModeManager->getListCacheTags();
+
+    if (empty($entity)) {
+      $route_entity_type_info = $this->getEntityTypeFromRouteMatch($route_match);
+      $entity_type_id = $route_entity_type_info['entity_type_id'];
+      $bundle_id = isset($route_entity_type_info['bundle']) ? $route_entity_type_info['bundle'] : $route->getOption('_form_mode_manager_bundle_entity_type_id');
+    }
+    else {
+      $entity_type_id = $route->getOption('_form_mode_manager_entity_type_id');
+      $bundle_id = !empty($route_match->getParameter($entity_type_id)) ? $route_match->getParameter($entity_type_id)->bundle() : 'user';
+    }
+
     return AccessResult::allowedIf($this->formModeManager->isActive($entity_type_id, $bundle_id, $this->formModeManager->getFormModeMachineName($form_mode_id)))->addCacheTags($cache_tags);
   }
 

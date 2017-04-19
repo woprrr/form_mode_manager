@@ -367,8 +367,7 @@ class RouteSubscriber extends RouteSubscriberBase {
   private function getFormModeManagerRequirements(array $form_mode, EntityTypeInterface $entity_type) {
     return [
       '_permission' => "use {$form_mode['id']} form mode+use {$entity_type->id()}.default form mode",
-      // @TODO For activate this found a solution generic for user.
-      //'_custom_access' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::checkAccess',
+      '_custom_access' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::checkAccess',
     ];
   }
 
