@@ -56,6 +56,12 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
         'cache_tags' => $this->formModeManager->getListCacheTags(),
       ];
 
+      // Special case for block_content entities.
+      if ('block_content' === $entity_type_id) {
+        $this->derivatives["form_mode_manager.$entity_type_id.default.task_tab"]['route_name'] = 'entity.block_content.canonical';
+        $this->derivatives["form_mode_manager.$entity_type_id.default.task_tab"]['parent_id'] = 'entity.block_content.canonical';
+      }
+
       // Add one sub-task by form-mode active.
       foreach ($form_modes as $form_mode_name => $form_mode) {
         $this->derivatives["form_mode_manager.{$form_mode['id']}.task_tab"] = [
@@ -69,6 +75,10 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
 
         if ('user' === $entity_type_id) {
           $this->setUserRegisterTask($form_mode);
+        }
+
+        if ('block_content' === $entity_type_id) {
+          $this->derivatives["form_mode_manager.{$form_mode['id']}.task_tab"]['parent_id'] = 'entity.block_content.canonical';
         }
       }
     }
@@ -88,7 +98,7 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
    *   The definition array of the base plugin.
    */
   private function setUserRegisterTask(array $form_mode) {
-    $this->derivatives["form_mode_manager.{$form_mode['id']}.task_tab"] = [
+    $this->derivatives["form_mode_manager.{$form_mode['id']}.register_task_tab"] = [
       'route_name' => "user.register.{$this->formModeManager->getFormModeMachineName($form_mode['id'])}",
       'title' => $this->t('Create new account as @form_mode', ['@form_mode' => $form_mode['label']]),
       'base_route' => "user.page",
