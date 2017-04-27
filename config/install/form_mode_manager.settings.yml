@@ -1,4 +1,7 @@
 form_modes:
+  node:
+    to_exclude: {  }
   user:
     to_exclude:
       register: register
+langcode: fr

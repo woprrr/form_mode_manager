@@ -1,0 +1,25 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Form Mode Manager module.
+ */
+
+/**
+ * Set the default Form Mode Manager general/links settings.
+ */
+function form_mode_manager_update_8001() {
+  // Set the default Form Mode Manager general settings.
+  \Drupal::configFactory()->getEditable('form_mode_manager.settings')
+    ->set("form_modes.user.to_exclude", ['register' => 'register'])
+    ->save(TRUE);
+
+  // Set the default Form Mode Manager links settings.
+  $config_links = \Drupal::configFactory()->getEditable('form_mode_manager.links');
+  $form_modes = array_keys($this->entityDisplayRepository->getAllFormModes());
+  foreach ($form_modes as $entity_type_id) {
+    $config_links->set("local_tasks.{$entity_type_id}.position", 'secondary');
+  }
+
+  $config_links->save(TRUE);
+}

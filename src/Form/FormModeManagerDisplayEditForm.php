@@ -89,11 +89,6 @@ class FormModeManagerDisplayEditForm extends EntityFormDisplayEditForm {
   /**
    * Determine if the current form-mode is 'default'.
    *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   *
    * @return bool
    *   True if this entityFormDisplay do rebuild routes.
    */

@@ -220,13 +220,14 @@ class FormModeManager implements FormModeManagerInterface {
    * Retrieve Form Mode Manager settings to format the exclusion list.
    */
   protected function setFormModesToExclude() {
-    $array = [];
-    $excluded_form_modes = $this->configFactory->get('form_mode_manager.settings')->get('form_modes');
+    $form_modes_to_exclude = [];
+    $config = $this->configFactory->get('form_mode_manager.settings')->get('form_modes');
+    $excluded_form_modes = (isset($config)) ? $config : [];
     foreach ($excluded_form_modes as $entity_type_id => $modes_excluded) {
-      $array[$entity_type_id][] = $modes_excluded;
+      $form_modes_to_exclude[$entity_type_id][] = $modes_excluded;
     }
 
-    $this->formModesExcluded = $array;
+    $this->formModesExcluded = $form_modes_to_exclude;
   }
 
 }
