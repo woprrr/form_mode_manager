@@ -1,0 +1,5 @@
+local_tasks:
+  node:
+    position: primary
+  taxonomy_term:
+    position: primary

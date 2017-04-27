@@ -1,0 +1,5 @@
+form_mode_manager.admin_settings:
+  title: 'Form Mode Manager settings'
+  description: 'Configure common settings for Display modes.'
+  parent: system.admin_config_content
+  route_name: form_mode_manager.admin_settings

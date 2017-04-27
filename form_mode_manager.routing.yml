@@ -1,0 +1,14 @@
+form_mode_manager.admin_settings:
+  path: '/admin/config/content/form_mode_manager'
+  defaults:
+    _form: 'Drupal\form_mode_manager\Form\FormModeManagerForm'
+    _title: 'Form Mode Manager settings'
+  requirements:
+    _permission: 'administer site configuration'
+form_mode_manager.admin_settings_links_task:
+  path: '/admin/config/content/form_mode_manager/links-task'
+  defaults:
+    _form: 'Drupal\form_mode_manager\Form\FormModeManagerLinksForm'
+    _title: 'Form Mode Manager settings Links task'
+  requirements:
+    _permission: 'administer site configuration'
