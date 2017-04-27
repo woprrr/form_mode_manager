@@ -20,6 +20,15 @@ function form_mode_manager_entity_type_alter(array &$entity_types) {
 }
 
 /**
+ * Implements hook_entity_type_build().
+ */
+function form_mode_manager_entity_type_build(array &$entity_types) {
+  return \Drupal::service('class_resolver')
+    ->getInstanceFromDefinition(EntityTypeInfo::class)
+    ->entityTypeBuild($entity_types);
+}
+
+/**
  * Implements hook_entity_operation().
  */
 function form_mode_manager_entity_operation(EntityInterface $entity) {
@@ -29,12 +38,12 @@ function form_mode_manager_entity_operation(EntityInterface $entity) {
 }
 
 /**
- * Implements hook_entity_update().
+ * Implements hook_entity_operation_alter().
  */
-function form_mode_manager_entity_update(EntityInterface $entity) {
+function form_mode_manager_entity_operation_alter(array &$operations, EntityInterface $entity) {
   return \Drupal::service('class_resolver')
     ->getInstanceFromDefinition(EntityTypeInfo::class)
-    ->entityUpdate($entity);
+    ->entityOperationAlter($operations, $entity);
 }
 
 /**

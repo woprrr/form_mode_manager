@@ -123,7 +123,32 @@ interface FormModeManagerInterface {
    * add her permissions tags.
    *
    * @return string[]
+   *   List of cache Tags to invalidate.
    */
   public function getListCacheTags();
+
+  /**
+   * Determine Local tasks position for an entity.
+   *
+   * @param string $entity_type_id
+   *   The entity type id.
+   *
+   * @return bool
+   *   True if tasks does display at primary position.
+   */
+  public function tasksIsPrimary($entity_type_id);
+
+  /**
+   * Determine if current entity_type has one bundle implement this mode.
+   *
+   * @param string $entity_type
+   *   The entity type id.
+   * @param string $form_mode_id
+   *   Identifier of form mode prefixed by entity type id.
+   *
+   * @return bool
+   *   True if tasks does display at primary position.
+   */
+  public function hasActiveFormMode($entity_type, $form_mode_id);
 
 }

@@ -1,2 +1,2 @@
-# FormModeManager
+# Form Mode Manager
 Under active development...

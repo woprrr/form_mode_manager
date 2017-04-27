@@ -11,7 +11,7 @@ use Drupal\Core\Url;
 class FrontPage extends ControllerBase {
 
   /**
-   * Node types that were created for FormModeManager Example.
+   * Node types that were created for Form Mode Manager Example.
    *
    * @var array
    */

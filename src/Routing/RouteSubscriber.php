@@ -64,6 +64,7 @@ class RouteSubscriber extends RouteSubscriberBase {
       $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
       if ('user' !== $entity_type_id) {
         $this->addFormModesRoutes($collection, $entity_type, $form_modes);
+        $this->enhanceDefaultRoutes($collection, $entity_type_id);
       }
       else {
         $this->addUserFormModesRoutes($collection, $entity_type, $form_modes);
@@ -72,7 +73,45 @@ class RouteSubscriber extends RouteSubscriberBase {
   }
 
   /**
-   * Add routes by form-modes on each existing `user` routes.
+   * Enhance existing entity operation routes (add_page, add_form, edit_form).
+   *
+   * @param \Symfony\Component\Routing\RouteCollection $collection
+   *   The route collection to retrieve parent entity routes.
+   * @param string $entity_type_id
+   *   The ID of the entity type.
+   */
+  private function enhanceDefaultRoutes(RouteCollection $collection, $entity_type_id) {
+    if ($route = $collection->get("$entity_type_id.add_page")) {
+      $collection->add("$entity_type_id.add_page", $this->routeEnhancer($route, $entity_type_id));
+    }
+
+    if ($route = $collection->get("entity.$entity_type_id.edit_form")) {
+      $collection->add("entity.$entity_type_id.edit_form", $this->routeEnhancer($route, $entity_type_id));
+    }
+
+    if ($route = $collection->get("entity.$entity_type_id.add_form")) {
+      $collection->add("entity.$entity_type_id.add_form", $this->routeEnhancer($route, $entity_type_id));
+    }
+  }
+
+  /**
+   * Add required parametters on route basis.
+   *
+   * @param \Symfony\Component\Routing\Route $route
+   *   The route object of entity.
+   * @param string $entity_type_id
+   *   The ID of the entity type.
+   *
+   * @return \Symfony\Component\Routing\Route
+   *   The route enhanced.
+   */
+  private function routeEnhancer(Route $route, $entity_type_id) {
+    $route->setRequirement('_permission', "use $entity_type_id.default form mode");
+    return $route;
+  }
+
+  /**
+   * Generate all routes derivate to entity.
    *
    * @param \Symfony\Component\Routing\RouteCollection $collection
    *   The route collection to retrieve parent entity routes.
@@ -129,7 +168,7 @@ class RouteSubscriber extends RouteSubscriberBase {
   }
 
   /**
-   * Generate route to FormModeManager `add-list` route.
+   * Generate route to Form Mode Manager `add-list` route.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition. Useful when a single class is,
@@ -137,32 +176,39 @@ class RouteSubscriber extends RouteSubscriberBase {
    * @param array $form_mode
    *   The operation array of form variation (form_mode).
    *
-   * @return \Symfony\Component\Routing\Route
+   * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
   private function getFormModeManagerListPageRoute(EntityTypeInterface $entity_type, array $form_mode) {
+    $route = NULL;
     $entity_type_id = $entity_type->id();
-    $route = new Route("/$entity_type_id/add-list/{form_mode_name}");
-    $route
-      ->addDefaults([
-        '_controller' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::addPage',
-        '_title' => $this->t('Add @entity_type', ['@entity_type' => $entity_type->getLabel()])
-          ->render(),
-        'entity_type' => $entity_type,
-      ])
-      ->addRequirements([
-        '_permission' => "use {$form_mode['id']} form mode",
-      ])
-      ->setOptions([
-        '_admin_route' => TRUE,
-        'form_mode_name' => ['type' => $this->formModeManager->getFormModeMachineName($form_mode['id'])],
-      ]);
+    $has_active_mode = $this->formModeManager->hasActiveFormMode(
+      $entity_type_id,
+      $this->formModeManager->getFormModeMachineName($form_mode['id'])
+    );
+
+    if ($has_active_mode) {
+      $route = new Route("/$entity_type_id/add-list/{form_mode_name}");
+      $route
+        ->addDefaults([
+          '_controller' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::addPage',
+          '_title' => $this->t('Add @entity_type', ['@entity_type' => $entity_type->getLabel()])
+            ->render(),
+          'entity_type' => $entity_type,
+        ])
+        ->addRequirements([
+          '_permission' => "use {$form_mode['id']} form mode",
+        ])
+        ->setOptions([
+          '_admin_route' => TRUE,
+        ]);
+    }
 
     return $route;
   }
 
   /**
-   * Get the FormModeManager `add-form` route.
+   * Get the Form Mode Manager `add-form` route.
    *
    * @param \Symfony\Component\Routing\RouteCollection $collection
    *   The route collection to retrieve parent entity routes.
@@ -175,14 +221,19 @@ class RouteSubscriber extends RouteSubscriberBase {
    *   The generated route, if available.
    */
   protected function getFormModeManagerAddRoute(RouteCollection $collection, EntityTypeInterface $entity_type, array $form_mode) {
-    if ($entity_add_route = $collection->get($this->getAddCollectionRouteName($entity_type))) {
+    $has_active_mode = $this->formModeManager->hasActiveFormMode(
+      $entity_type->id(),
+      $this->formModeManager->getFormModeMachineName($form_mode['id'])
+    );
+
+    if ($has_active_mode && $entity_add_route = $collection->get($this->getAddCollectionRouteName($entity_type))) {
       return $this->setRoutes($entity_add_route, $entity_type, $form_mode);
     }
     return NULL;
   }
 
   /**
-   * Get the FormModeManager `admin-create` route.
+   * Get the Form Mode Manager `admin-create` route.
    *
    * @param \Symfony\Component\Routing\RouteCollection $collection
    *   The route collection to retrieve parent entity routes.
@@ -207,7 +258,7 @@ class RouteSubscriber extends RouteSubscriberBase {
   }
 
   /**
-   * Get the FormModeManager `user-register` route.
+   * Get the Form Mode Manager `user-register` route.
    *
    * @param \Symfony\Component\Routing\RouteCollection $collection
    *   The route collection to retrieve parent entity routes.
@@ -232,7 +283,7 @@ class RouteSubscriber extends RouteSubscriberBase {
   }
 
   /**
-   * Get the FormModeManager `edit-form` route.
+   * Get the Form Mode Manager `edit-form` route.
    *
    * @param \Symfony\Component\Routing\RouteCollection $collection
    *   The route collection to retrieve parent entity routes.
@@ -245,14 +296,21 @@ class RouteSubscriber extends RouteSubscriberBase {
    *   The generated route, if available.
    */
   protected function getFormModeManagerEditRoute(RouteCollection $collection, EntityTypeInterface $entity_type, array $form_mode) {
-    if ($entity_edit_route = $collection->get("entity.{$entity_type->id()}.edit_form")) {
+    $has_active_mode = $this->formModeManager->hasActiveFormMode(
+      $entity_type->id(),
+      $this->formModeManager->getFormModeMachineName($form_mode['id'])
+    );
+
+    $entity_edit_route = $collection->get("entity.{$entity_type->id()}.edit_form");
+    if ($has_active_mode && !empty($entity_edit_route)) {
       return $this->setRoutes($entity_edit_route, $entity_type, $form_mode);
     }
+
     return NULL;
   }
 
   /**
-   * Set FormModeManager routes based on parent entity routes.
+   * Set Form Mode Manager routes based on parent entity routes.
    *
    * @param \Symfony\Component\Routing\Route $parent_route
    *   The route object of entity.
@@ -262,7 +320,7 @@ class RouteSubscriber extends RouteSubscriberBase {
    *   The form mode info.
    *
    * @return \Symfony\Component\Routing\Route
-   *   FormModeManager route to be added on entity collection.
+   *   Form Mode Manager route to be added on entity collection.
    */
   private function setRoutes(Route $parent_route, EntityTypeInterface $entity_type, array $form_mode) {
     $route_defaults = array_merge($parent_route->getDefaults(), $this->getFormModeManagerDefaults($form_mode));
@@ -314,7 +372,7 @@ class RouteSubscriber extends RouteSubscriberBase {
   }
 
   /**
-   * Get defaults parameters nedeed to build FormModeManager routes.
+   * Get defaults parameters nedeed to build Form Mode Manager routes.
    *
    * @param array $form_mode
    *   The form mode info.
@@ -331,7 +389,7 @@ class RouteSubscriber extends RouteSubscriberBase {
   }
 
   /**
-   * Get options parameters nedeed to build FormModeManager routes.
+   * Get options parameters nedeed to build Form Mode Manager routes.
    *
    * @param array $form_mode
    *   The form mode info.
@@ -359,14 +417,14 @@ class RouteSubscriber extends RouteSubscriberBase {
   }
 
   /**
-   * Get options requirements nedeed to build FormModeManager routes.
+   * Get options requirements nedeed to build Form Mode Manager routes.
    *
    * @return array
    *   Array contain requirements routes parameters.
    */
   private function getFormModeManagerRequirements(array $form_mode, EntityTypeInterface $entity_type) {
     return [
-      '_permission' => "use {$form_mode['id']} form mode+use {$entity_type->id()}.default form mode",
+      '_permission' => "use {$form_mode['id']} form mode",
       '_custom_access' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::checkAccess',
     ];
   }

@@ -42,11 +42,11 @@ class FormModeManager implements FormModeManagerInterface {
   protected $entityTypeBundleInfo;
 
   /**
-   * List of form_modes unavailable to expose by FormModeManager.
+   * List of form_modes unavailable to expose by Form Mode Manager.
    *
    * @var array
    */
-  public $formModesExcluded = ['user' => 'register'];
+  public $formModesExcluded;
 
   /**
    * Constructs a FormDisplayManager object.
@@ -65,6 +65,7 @@ class FormModeManager implements FormModeManagerInterface {
     $this->configFactory = $config_factory;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
+    $this->setFormModesToExclude();
   }
 
   /**
@@ -76,6 +77,7 @@ class FormModeManager implements FormModeManagerInterface {
     /** @var \Drupal\Core\Config\Entity\ConfigEntityType $entity_type */
     $entity_type = $this->entityTypeManager->getDefinition('entity_form_display');
     $config_prefix = $entity_type->getConfigPrefix();
+
     $ids = $this->configFactory->listAll($config_prefix . '.' . $entity_type_id . '.');
     foreach ($ids as $id) {
       $config_id = str_replace($config_prefix . '.', '', $id);
@@ -85,10 +87,12 @@ class FormModeManager implements FormModeManagerInterface {
       }
     }
 
-    /** @var \Drupal\Core\Entity\Entity\EntityFormDisplay $form_mode */
-    foreach ($this->entityTypeManager->getStorage($entity_type->id())->loadMultiple($load_ids) as $form_mode) {
+    /** @var \Drupal\Core\Entity\Entity\EntityFormDisplay[] $entity_storage */
+    $entity_storage = $this->entityTypeManager->getStorage($entity_type->id())->loadMultiple($load_ids);
+    foreach ($entity_storage as $form_mode) {
       $form_mode_ids[$form_mode->getMode()] = $form_mode;
     }
+
     return $form_mode_ids;
   }
 
@@ -136,11 +140,12 @@ class FormModeManager implements FormModeManagerInterface {
    * {@inheritdoc}
    */
   public function filterExcludedFormModes(array &$form_mode) {
-    foreach ($this->formModesExcluded as $entity_type_id => $form_mode_to_exclude) {
-      if (isset($form_mode[$form_mode_to_exclude])
-        && $form_mode[$form_mode_to_exclude]['targetEntityType'] === $entity_type_id
-      ) {
-        unset($form_mode[$form_mode_to_exclude]);
+    foreach ($this->formModesExcluded as $entity_type_id => $config) {
+      $form_modes = array_keys($config[0]['to_exclude']);
+      foreach ($form_mode as $form_mode_id => $form_mode_definition) {
+        if (in_array($form_mode_id, $form_modes) && $form_mode[$form_mode_id]['targetEntityType'] === $entity_type_id) {
+          unset($form_mode[$form_mode_id]);
+        }
       }
     }
 
@@ -183,6 +188,45 @@ class FormModeManager implements FormModeManagerInterface {
   public function getListCacheTags() {
     return $this->entityTypeManager->getDefinition('entity_form_display')
       ->getListCacheTags();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function tasksIsPrimary($entity_type_id) {
+    $links_settings = $this->configFactory
+      ->get('form_mode_manager.links')
+      ->get("local_tasks.{$entity_type_id}.position");
+
+    return (isset($links_settings) && $links_settings === 'primary') ? TRUE : FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasActiveFormMode($entity_type, $form_mode_id) {
+    $has_active = FALSE;
+    $bundles = array_keys($this->entityTypeBundleInfo->getBundleInfo($entity_type));
+    foreach ($bundles as $bundle) {
+      if (!$has_active) {
+        $has_active = $this->isActive($entity_type, $bundle, $form_mode_id);
+      }
+    }
+
+    return $has_active;
+  }
+
+  /**
+   * Retrieve Form Mode Manager settings to format the exclusion list.
+   */
+  protected function setFormModesToExclude() {
+    $array = [];
+    $excluded_form_modes = $this->configFactory->get('form_mode_manager.settings')->get('form_modes');
+    foreach ($excluded_form_modes as $entity_type_id => $modes_excluded) {
+      $array[$entity_type_id][] = $modes_excluded;
+    }
+
+    $this->formModesExcluded = $array;
   }
 
 }

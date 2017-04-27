@@ -118,7 +118,7 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
       $bundle_id = $bundle->id();
       $access = $this->entityTypeManager()
         ->getAccessControlHandler($entity_type_id)
-        ->createAccess($bundle_id, NULL, [], TRUE);
+        ->createAccess($bundle_id, $this->currentUser(), [], TRUE);
 
       if ($access->isAllowed() && $this->formModeManager->isActive($entity_type_id, $bundle_id, $form_mode_name)) {
         $content[$bundle_id] = $bundle;

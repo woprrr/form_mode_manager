@@ -1,4 +1,4 @@
-FormModeManager Examples module
+Form Mode Manager Examples module
 ===============================
 
 Allows to use form_mode implement on Drupal 8 on each ContentEntity.
