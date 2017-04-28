@@ -54,7 +54,7 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
 
       $this->derivatives["form_mode_manager.$entity_type_id.default.task_tab"] = [
         'route_name' => "entity.$entity_type_id.edit_form",
-        'title' => $this->t('Edit as @form_mode', ['@form_mode' => 'Default']),
+        'title' => $this->t('Edit as Default'),
         'parent_id' => "entity.$entity_type_id.edit_form",
         'cache_tags' => $form_mode_manager_tags,
       ];

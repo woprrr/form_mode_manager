@@ -95,7 +95,7 @@ class RouteSubscriber extends RouteSubscriberBase {
   }
 
   /**
-   * Add required parametters on route basis.
+   * Add required parameters on route basis.
    *
    * @param \Symfony\Component\Routing\Route $route
    *   The route object of entity.
@@ -188,7 +188,7 @@ class RouteSubscriber extends RouteSubscriberBase {
     );
 
     if ($has_active_mode) {
-      $route = new Route("/$entity_type_id/add-list/{form_mode_name}");
+      $route = new Route("/$entity_type_id/add-list/{{$this->formModeManager->getFormModeMachineName($form_mode['id'])}}");
       $route
         ->addDefaults([
           '_controller' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::addPage',
