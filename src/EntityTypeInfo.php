@@ -79,7 +79,6 @@ class EntityTypeInfo implements ContainerInjectionInterface {
         foreach ($form_modes as $form_mode_name) {
           if ($default_form = $entity_definition->getFormClass('default')) {
             $entity_definition->setFormClass($form_mode_name, $default_form);
-            $entity_definition->getFormClass($form_mode_name);
           }
 
           // Add one entity operation for "edit" context.

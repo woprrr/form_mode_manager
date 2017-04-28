@@ -16,7 +16,7 @@ function form_mode_manager_update_8001() {
 
   // Set the default Form Mode Manager links settings.
   $config_links = \Drupal::configFactory()->getEditable('form_mode_manager.links');
-  $form_modes = array_keys($this->entityDisplayRepository->getAllFormModes());
+  $form_modes = array_keys(\Drupal::service('entity_display.repository')->getAllFormModes());
   foreach ($form_modes as $entity_type_id) {
     $config_links->set("local_tasks.{$entity_type_id}.position", 'secondary');
   }
