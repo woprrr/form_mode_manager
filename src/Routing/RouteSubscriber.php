@@ -188,13 +188,14 @@ class RouteSubscriber extends RouteSubscriberBase {
     );
 
     if ($has_active_mode) {
-      $route = new Route("/$entity_type_id/add-list/{{$this->formModeManager->getFormModeMachineName($form_mode['id'])}}");
+      $route = new Route("/$entity_type_id/add-list/{$this->formModeManager->getFormModeMachineName($form_mode['id'])}");
       $route
         ->addDefaults([
           '_controller' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::addPage',
           '_title' => $this->t('Add @entity_type', ['@entity_type' => $entity_type->getLabel()])
             ->render(),
           'entity_type' => $entity_type,
+          'form_mode_name' => $this->formModeManager->getFormModeMachineName($form_mode['id']),
         ])
         ->addRequirements([
           '_permission' => "use {$form_mode['id']} form mode",
