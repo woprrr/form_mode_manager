@@ -14,4 +14,14 @@ function form_mode_manager_examples_install() {
     ->getEditable('system.site')
     ->set('page.front', '/form_mode_manager_examples')
     ->save();
+
+  // Tell Drupal you have enhance all compatibles entity_types.
+  /* @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface $invalidator */
+  $invalidator = \Drupal::service('cache_tags.invalidator');
+  $invalidator->invalidateTags([
+    'local_action',
+    'local_tasks',
+    'entity_types',
+    'rendered',
+  ]);
 }
