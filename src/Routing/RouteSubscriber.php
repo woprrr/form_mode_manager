@@ -174,7 +174,7 @@ class RouteSubscriber extends RouteSubscriberBase {
    *   The entity type definition. Useful when a single class is,
    *   used for multiple, possibly dynamic entity types.
    * @param array $form_mode
-   *   The operation array of form variation (form_mode).
+   *   An associative array represent a DisplayForm entity.
    *
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
