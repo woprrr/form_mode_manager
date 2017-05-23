@@ -324,7 +324,12 @@ class RouteSubscriber extends RouteSubscriberBase {
    *   Form Mode Manager route to be added on entity collection.
    */
   private function setRoutes(Route $parent_route, EntityTypeInterface $entity_type, array $form_mode) {
-    $route_defaults = array_merge($parent_route->getDefaults(), $this->getFormModeManagerDefaults($form_mode));
+    $op = 'create';
+    if (preg_match_all('/^.*?\/edit[^$]*/', $parent_route->getPath(), $matches, PREG_SET_ORDER, 0)) {
+      $op = 'edit';
+    }
+
+    $route_defaults = array_merge($parent_route->getDefaults(), $this->getFormModeManagerDefaults($form_mode, $op));
     $roue_options = array_merge($parent_route->getOptions(), $this->getFormModeManagerOptions($form_mode, $entity_type));
     $route_requirements = array_merge($parent_route->getRequirements(), $this->getFormModeManagerRequirements($form_mode, $entity_type));
 
@@ -377,16 +382,24 @@ class RouteSubscriber extends RouteSubscriberBase {
    *
    * @param array $form_mode
    *   The form mode info.
+   * @param string $operation
+   *   Operation context (create or edit).
    *
    * @return array
    *   Array contain defaults routes parameters.
    */
-  private function getFormModeManagerDefaults(array $form_mode) {
-    return [
+  private function getFormModeManagerDefaults(array $form_mode, $operation) {
+    $properties = [
       '_entity_form' => $form_mode['id'],
       '_controller' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::entityAdd',
       '_title_callback' => '\Drupal\form_mode_manager\Controller\EntityFormModeController::addPageTitle',
     ];
+
+    if ('edit' === $operation) {
+      $properties['_title_callback'] = '\Drupal\form_mode_manager\Controller\EntityFormModeController::editPageTitle';
+    }
+
+    return $properties;
   }
 
   /**
