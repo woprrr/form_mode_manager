@@ -2,7 +2,7 @@
 
 namespace Drupal\form_mode_manager_examples\Tests;
 
-use Drupal\simpletest\WebTestBase;
+use Drupal\Tests\BrowserTestBase;
 
 /**
  * Tests form_mode_manager_examples.
@@ -11,7 +11,7 @@ use Drupal\simpletest\WebTestBase;
  *
  * @ingroup form_mode_manager
  */
-class FormModeManagerExamplesTest extends WebTestBase {
+class FormModeManagerExamplesTest extends BrowserTestBase {
 
   /**
    * Modules to install.
@@ -29,7 +29,7 @@ class FormModeManagerExamplesTest extends WebTestBase {
    */
   public function setUp() {
     parent::setUp();
-    // Theme needs to be set before enabling form_mode_manager_examples because
+    // Theme needs to be set before enabling form_mode_manager_examples because,
     // of dependency.
     \Drupal::service('theme_handler')->install(['bartik']);
     $this->config('system.theme')
@@ -44,11 +44,11 @@ class FormModeManagerExamplesTest extends WebTestBase {
    */
   public function testInstalled() {
     $this->drupalGet('');
-    $this->assertTitle('Form Mode Manager examples | Drupal');
-    $this->assertText('Form Mode Manager examples');
-    $this->assertText('Welcome to Form Mode Manager example.');
-    $this->assertText('Form Mode Manager allows to use form_mode implement on Drupal 8 on each Entity.');
-    $this->assertText('You can test the functionality with custom content types created for the demonstration of features Form Mode Manager examples:');
+    $this->assertSession()->titleEquals('Form Mode Manager examples | Drupal');
+    $this->assertSession()->pageTextContains('Form Mode Manager examples');
+    $this->assertSession()->pageTextContains('Welcome to Form Mode Manager example.');
+    $this->assertSession()->pageTextContains('Form Mode Manager allows to use form_mode implement on Drupal 8 on each Entity.');
+    $this->assertSession()->pageTextContains('You can test the functionality with custom content types created for the demonstration of features Form Mode Manager examples:');
   }
 
 }

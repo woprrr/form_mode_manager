@@ -68,11 +68,37 @@ interface FormModeManagerInterface {
    *
    * @param array $form_mode
    *   A form mode collection to be filtered.
+   * @param string $entity_type_id
+   *   The entity type ID of entity.
    *
    * @return array
    *   The collection without uneeded form modes.
    */
-  public function filterExcludedFormModes(array &$form_mode);
+  public function filterExcludedFormModes(array &$form_mode, $entity_type_id);
+
+  /**
+   * Determine if form_mode definition passed is valid.
+   *
+   * @param array $form_mode
+   *   A form mode definition to fetch.
+   *
+   * @return bool
+   *   True if Form mode have a minimum informations or false.
+   */
+  public function isValidFormMode(array $form_mode);
+
+  /**
+   * Evaluate if current form_mode is candidate to be filtered or not.
+   *
+   * @param array $form_mode
+   *   A form mode definition.
+   * @param string $entity_type_id
+   *   The entity type id.
+   *
+   * @return bool
+   *   True if form mode is candidate to be excluded or False if not.
+   */
+  public function candidateToExclude(array $form_mode, $entity_type_id);
 
   /**
    * Gets the entity form mode info for a specific bundle.

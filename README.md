@@ -1,2 +1,3 @@
-# Form Mode Manager
+# Form Mode Manager [![Build Status](https://travis-ci.org/woprrr/form_mode_manager.svg?branch=8.x-1.x)](https://travis-ci.org/woprrr/form_mode_manager) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/woprrr/form_mode_manager/badges/quality-score.png?b=8.x-1.x)](https://scrutinizer-ci.com/g/woprrr/form_mode_manager/?branch=8.x-1.x)
+
 Under active development...

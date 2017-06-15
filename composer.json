@@ -1,0 +1,29 @@
+{
+  "name": "drupal/form_mode_manager",
+  "description": "Allow use of form mode in all Content entities",
+  "type": "drupal-module",
+  "homepage": "https://www.drupal.org/project/image_widget_crop",
+  "keywords": ["Drupal", "Drupal Display modes", "Form modes", "Field Ui"],
+  "license": "GPL-2.0+",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/form_mode_manager",
+    "irc": "irc://irc.freenode.org/drupal-contribute",
+    "source": "https://www.drupal.org/project/form_mode_manager"
+  },
+  "authors": [
+    {
+      "name": "Alexandre Mallet",
+      "homepage": "https://github.com/woprrr",
+      "role": "Maintainer"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://packages.drupal.org/8"
+    }
+  ],
+  "require": { }
+}

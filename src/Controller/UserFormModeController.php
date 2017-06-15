@@ -23,6 +23,9 @@ class UserFormModeController extends EntityFormModeBase implements ContainerInje
    *
    * @return array
    *   A User submission form.
+   *
+   * @throws \Exception
+   *   If invalid entity type or form mode not exist.
    */
   public function entityAdd(RouteMatchInterface $route_match) {
     /* @var \Drupal\Core\Entity\EntityInterface $entity */

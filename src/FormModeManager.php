@@ -81,14 +81,15 @@ class FormModeManager implements FormModeManagerInterface {
     $ids = $this->configFactory->listAll($config_prefix . '.' . $entity_type_id . '.');
     foreach ($ids as $id) {
       $config_id = str_replace($config_prefix . '.', '', $id);
-      list(,, $form_mode_name) = explode('.', $config_id);
+      list(, , $form_mode_name) = explode('.', $config_id);
       if ($form_mode_name != 'default') {
         $load_ids[] = $config_id;
       }
     }
 
     /** @var \Drupal\Core\Entity\Entity\EntityFormDisplay[] $entity_storage */
-    $entity_storage = $this->entityTypeManager->getStorage($entity_type->id())->loadMultiple($load_ids);
+    $entity_storage = $this->entityTypeManager->getStorage($entity_type->id())
+      ->loadMultiple($load_ids);
     foreach ($entity_storage as $form_mode) {
       $form_mode_ids[$form_mode->getMode()] = $form_mode;
     }
@@ -115,7 +116,7 @@ class FormModeManager implements FormModeManagerInterface {
    */
   public function getFormModesByEntity($entity_type_id) {
     $form_modes = $this->entityDisplayRepository->getFormModes($entity_type_id);
-    $this->filterExcludedFormModes($form_modes);
+    $this->filterExcludedFormModes($form_modes, $entity_type_id);
 
     return $form_modes;
   }
@@ -127,7 +128,7 @@ class FormModeManager implements FormModeManagerInterface {
     $filtered_form_modes = [];
     $form_modes = $this->entityDisplayRepository->getAllFormModes();
     foreach ($form_modes as $entity_type_id => $form_mode) {
-      $form_mode = $this->filterExcludedFormModes($form_mode);
+      $form_mode = $this->filterExcludedFormModes($form_mode, $entity_type_id);
       if (!empty($form_mode)) {
         $filtered_form_modes[$entity_type_id] = $form_mode;
       }
@@ -139,17 +140,49 @@ class FormModeManager implements FormModeManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function filterExcludedFormModes(array &$form_mode) {
-    foreach ($this->formModesExcluded as $entity_type_id => $config) {
-      $form_modes = array_keys($config[0]['to_exclude']);
-      foreach ($form_mode as $form_mode_id => $form_mode_definition) {
-        if (in_array($form_mode_id, $form_modes) && $form_mode[$form_mode_id]['targetEntityType'] === $entity_type_id) {
-          unset($form_mode[$form_mode_id]);
-        }
+  public function isValidFormMode(array $form_mode) {
+    return (isset($form_mode['targetEntityType']) && isset($form_mode['id']));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function candidateToExclude(array $form_mode, $entity_type_id) {
+    if ($this->isValidFormMode($form_mode) && $entity_type_id === $form_mode['targetEntityType']) {
+      return FALSE;
+    }
+
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function filterExcludedFormModes(array &$form_mode, $entity_type_id) {
+    foreach ($form_mode as $form_mode_id => $form_mode_definition) {
+      $form_modes = $this->getFormModeExcluded($entity_type_id);
+      if (in_array($form_mode_id, $form_modes)) {
+        unset($form_mode[$form_mode_id]);
+      }
+      elseif ($this->candidateToExclude($form_mode_definition, $entity_type_id)) {
+        unset($form_mode[$form_mode_id]);
       }
     }
 
     return $form_mode;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFormModeExcluded($entity_type_id) {
+    $form_modes = [];
+
+    if (isset($this->formModesExcluded[$entity_type_id])) {
+      $form_modes = $this->formModesExcluded[$entity_type_id];
+    }
+
+    return $form_modes;
   }
 
   /**
@@ -221,7 +254,8 @@ class FormModeManager implements FormModeManagerInterface {
    */
   protected function setFormModesToExclude() {
     $form_modes_to_exclude = [];
-    $config = $this->configFactory->get('form_mode_manager.settings')->get('form_modes');
+    $config = $this->configFactory->get('form_mode_manager.settings')
+      ->get('form_modes');
     $excluded_form_modes = (isset($config)) ? $config : [];
     foreach ($excluded_form_modes as $entity_type_id => $modes_excluded) {
       $form_modes_to_exclude[$entity_type_id][] = $modes_excluded;

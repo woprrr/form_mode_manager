@@ -3,7 +3,9 @@
 namespace Drupal\form_mode_manager_examples\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Simple front page controller for form_mode_manager_examples module.
@@ -16,22 +18,53 @@ class FrontPage extends ControllerBase {
    * @var array
    */
   protected $fmmExampleEntityBundles = [
-    'article',
-    'page',
     'node_form_mode_example',
   ];
+
+  /**
+   * The entity display repository.
+   *
+   * @var \Drupal\form_mode_manager\FormModeManagerInterface
+   */
+  protected $formModeManager;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * Constructs a Form mode manager FrontPage object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity manager service.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager')
+    );
+  }
 
   /**
    * Displays useful information for form_mode_manager on the front page.
    */
   public function content() {
-    $entity_items = [];
-    foreach ($this->fmmExampleEntityBundles as $entity_bundle) {
-      $entity_type = $this->entityTypeManager()->getStorage('node_type')->load($entity_bundle);
-      $entity_items['#items'][] = $this->t('<a href="@url">@label',
+    $items = [];
+    foreach ($this->fmmExampleEntityBundles as $node_type) {
+      $node_type = $this->entityTypeManager->getStorage('node_type')->load($node_type);
+      $items['#items'][] = $this->t('<a href="@url">@label',
         [
-          '@url' => Url::fromRoute('node.add', ['node_type' => $entity_type->id()])->toString(),
-          '@label' => $entity_type->label(),
+          '@url' => Url::fromRoute('node.add', ['node_type' => $node_type->id()])->toString(),
+          '@label' => $node_type->label(),
         ]
       );
     }
@@ -48,7 +81,7 @@ class FrontPage extends ControllerBase {
         'list' => [
           '#theme' => 'item_list',
           '#items' => [
-            array_values($entity_items),
+            array_values($items),
           ],
         ],
       ],
