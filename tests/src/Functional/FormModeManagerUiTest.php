@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\form_mode_manager\Functional;
 
-use Drupal\taxonomy\Tests\TaxonomyTestTrait;
+use Drupal\Tests\taxonomy\Functional\TaxonomyTestTrait;
 use Drupal\user\Entity\Role;
 
 /**
