@@ -108,6 +108,9 @@ class FormModeManagerDisplayEditForm extends EntityFormDisplayEditForm {
    *   True if this entityFormDisplay do rebuild routes.
    */
   private function formModesUpdated(array $form, FormStateInterface $form_state) {
+    if (!isset($form['modes'])) {
+      return FALSE;
+    }
 
     if ($this->isNewFormMode($this->defaultDisplayModes($form), $this->submittedDisplayModes($form_state))) {
       return TRUE;
