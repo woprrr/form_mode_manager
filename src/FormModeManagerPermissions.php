@@ -62,7 +62,7 @@ class FormModeManagerPermissions implements ContainerInjectionInterface {
     $form_modes_definitions = $this->formModeManager->getAllFormModesDefinitions();
     foreach ($form_modes_definitions as $entity_type_id => $form_modes) {
       $perms += $this->buildDefaultPermissions($entity_type_id);
-      $perms += $this->buildFormModePermissions($entity_type_id, $form_modes);
+      $perms += $this->buildFormModePermissions($entity_type_id, array_keys($form_modes));
     }
 
     return $perms;
@@ -84,9 +84,10 @@ class FormModeManagerPermissions implements ContainerInjectionInterface {
         'title' => $this->t('Use default form mode for %type_id entity', $placeholders),
         'description' => [
           '#prefix' => '<em>',
-          '#markup' => $this->t("Warning: This permission can hide defaults operation (edit/add) for <b>%type_id</b> entity.", $placeholders),
+          '#markup' => $this->t("This permission can hide defaults operation (edit/add) for <b>%type_id</b> entity.", $placeholders),
           '#suffix' => '</em>',
         ],
+        'restrict access' => TRUE,
       ],
     ];
   }
@@ -104,25 +105,28 @@ class FormModeManagerPermissions implements ContainerInjectionInterface {
    */
   protected function buildFormModePermissions($entity_type_id, array $form_modes) {
     $perms_per_mode = [];
-    $placeholders = ['%type_id' => $entity_type_id];
+    $entity_placeholder = ['%type_id' => $entity_type_id];
 
     $form_modes_storage = $this->entityTypeManager->getStorage('entity_form_mode');
     foreach ($form_modes as $form_mode) {
-      $form_mode_loaded = $form_modes_storage->loadByProperties(['id' => $form_mode['id']]);
+      $form_mode_loaded = $form_modes_storage->loadByProperties(['id' => "$entity_type_id.$form_mode"]);
+      /** @var \Drupal\Core\Entity\Entity\EntityFormMode $form_mode_loaded */
+      $form_mode_loaded = reset($form_mode_loaded);
 
-      $placeholders += [
-        '%form_mode_label' => $form_mode['label'],
-        ':url' => $form_mode_loaded[$form_mode['id']]->url(),
-      ];
+      $placeholders = array_merge($entity_placeholder, [
+        '%form_mode_label' => $form_mode_loaded->label(),
+        ':url' => $form_mode_loaded->url(),
+      ]);
 
       $perms_per_mode += [
-        "use {$form_mode['id']} form mode" => [
+        "use {$form_mode_loaded->id()} form mode" => [
           'title' => $this->t('Use <a href=":url">%form_mode_label</a> form mode with <b>%type_id</b> entity', $placeholders),
           'description' => [
             '#prefix' => '<em>',
-            '#markup' => $this->t('Warning: This permission may have security implications depending on how the <b>%type_id</b> entity is configured.', $placeholders),
+            '#markup' => $this->t('This permission control access of <b>%type_id</b> entity with %form_mode_label form mode.', $placeholders),
             '#suffix' => '</em>',
           ],
+          'restrict access' => TRUE,
         ],
       ];
     }
