@@ -286,7 +286,12 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
       $bundle_id = !empty($route_match->getParameter($entity_type_id)) ? $route_match->getParameter($entity_type_id)->bundle() : 'user';
     }
 
-    return AccessResult::allowedIf($this->formModeManager->isActive($entity_type_id, $bundle_id, $this->formModeManager->getFormModeMachineName($form_mode_id)))->addCacheTags($cache_tags);
+    $result = AccessResult::allowedIf($this->formModeManager->isActive($entity_type_id, $bundle_id, $this->formModeManager->getFormModeMachineName($form_mode_id)))->addCacheTags($cache_tags);
+    if ($entity) {
+      $result->addCacheableDependency($entity);
+    }
+
+    return $result;
   }
 
   /**
@@ -330,7 +335,7 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
       'bundle_entity_type' => $bundle_entity_type_id,
       'entity_key' => $entity_type_key,
       'entity_type_id' => $entity_type_id,
-      'form_mode' => !empty($form_mode_definition) ? $form_mode_definition[$entity_type_id][$form_mode] : NULL,
+      'form_mode' => isset($form_mode_definition[$entity_type_id][$form_mode]) ? $form_mode_definition[$entity_type_id][$form_mode] : NULL,
     ];
   }
 
