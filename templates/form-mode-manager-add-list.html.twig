@@ -1,9 +1,17 @@
 {#
 /**
  * @file
- * Theme override for form_mode_manager add_list.
+ * Default implementation to present a list of bundles as specific form mode.
  *
- *  @TODO Change wording of that. Variabilize 'node.type_add' onto preprocessor to use correct variable.
+ * Available variables:
+ *   - bundles: A list of bundles, each with the following properties:
+ *     - description: Bundle description.
+ *     - add_link: Link to create an entity of this bundle as specific Form mode.
+ *   - add_bundle_message: The message shown when there are no bundles. Only
+ *
+ * @see template_preprocess_form_mode_manager_add_list()
+ *
+ * @ingroup themeable
  */
 #}
 {% if types is not empty %}
