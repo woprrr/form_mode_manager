@@ -1,22 +1,20 @@
 # Schema for configuration files of the Form Mode Manager module.
-local_tasks_negociation:
-  type: mapping
-  label: 'Position negociation of Form Mode Manager tasks'
+form_mode_manager.settings:
+  type: config_object
+  label: 'Form Mode Manager common settings'
   mapping:
-    position:
-      type: string
-      label: Position
-
-form_modes_excluded:
-  type: mapping
-  label: 'List of form-modes to exclude of Form Mode Manager enhancement'
-  mapping:
-    to_exclude:
+    form_modes:
       type: sequence
-      label: 'List of form-mode to exclude'
+      label: 'Form mode to exclude of manager system'
       sequence:
-        type: string
-        label: Form mode name
+        type: mapping
+        mapping:
+          to_exclude:
+            type: sequence
+            label: 'List of form-mode to exclude'
+            sequence:
+              type: string
+              label: Form mode name
 
 form_mode_manager.links:
   type: config_object
@@ -26,16 +24,9 @@ form_mode_manager.links:
       type: sequence
       label: 'Local tasks position by entity type'
       sequence:
-        type: local_tasks_negociation
-        label: 'Local tasks position by entity type'
-
-form_mode_manager.settings:
-  type: config_object
-  label: 'Form Mode Manager settings'
-  mapping:
-    form_modes:
-      type: sequence
-      label: 'Form mode to exclude of manager lists'
-      sequence:
-        type: form_modes_excluded
-        label: 'Form mode to exclude of manager lists'
+        type: mapping
+        label: 'Position of generated tasks by Form Mode Manager'
+        mapping:
+          position:
+            type: string
+            label: Position

@@ -1,4 +1,16 @@
 local_tasks:
   node:
     position: secondary
+  user:
+    position: secondary
+  block_content:
+    position: secondary
+  comment:
+    position: primary
+  contact_message:
+    position: primary
+  media:
+    position: secondary
+  taxonomy_term:
+    position: secondary
 langcode: fr
