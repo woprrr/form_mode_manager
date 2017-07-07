@@ -68,6 +68,7 @@ class RouteSubscriber extends RouteSubscriberBase {
       }
       else {
         $this->addUserFormModesRoutes($collection, $entity_type, $form_modes);
+        $this->enhanceUserDefaultRoutes($collection, $entity_type_id);
       }
     }
   }
@@ -91,6 +92,28 @@ class RouteSubscriber extends RouteSubscriberBase {
 
     if ($route = $collection->get("entity.$entity_type_id.add_form")) {
       $collection->add("entity.$entity_type_id.add_form", $this->routeEnhancer($route, $entity_type_id));
+    }
+  }
+
+  /**
+   * Enhance existing User operation routes (add_page, add_form, edit_form).
+   *
+   * @param \Symfony\Component\Routing\RouteCollection $collection
+   *   The route collection to retrieve parent entity routes.
+   * @param string $entity_type_id
+   *   The ID of the entity type.
+   */
+  private function enhanceUserDefaultRoutes(RouteCollection $collection, $entity_type_id) {
+    if ($route = $collection->get("user.register")) {
+      $collection->add("user.register", $this->routeEnhancer($route, $entity_type_id));
+    }
+
+    if ($route = $collection->get("entity.$entity_type_id.edit_form")) {
+      $collection->add("entity.$entity_type_id.edit_form", $this->routeEnhancer($route, $entity_type_id));
+    }
+
+    if ($route = $collection->get("entity.$entity_type_id.add_form")) {
+      $collection->add("form_mode_manager.user.add_page", $this->routeEnhancer($route, $entity_type_id));
     }
   }
 

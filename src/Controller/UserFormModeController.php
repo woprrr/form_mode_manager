@@ -39,13 +39,13 @@ class UserFormModeController extends EntityFormModeBase implements ContainerInje
     }
 
     $form_mode_id = $this->formModeManager->getFormModeMachineName($route_match->getRouteObject()->getOption('parameters')['form_mode']['id']);
-    $operation = empty($form_mode_id) ? 'default' : $form_mode_id;
+    $operation = empty($form_mode_id) ? 'register' : $form_mode_id;
 
     if ($entity instanceof EntityInterface) {
       return $this->entityFormBuilder()->getForm($entity, $operation);
     }
 
-    throw new \Exception('Invalide entity passed or inexistant form mode');
+    throw new \Exception('Invalid entity passed or inexistant form mode');
   }
 
   /**
