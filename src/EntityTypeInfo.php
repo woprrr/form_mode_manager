@@ -130,7 +130,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
               'title' => $this->t('Edit as @form_mode_name', ['@form_mode_name' => $form_mode['label']])
                 ->render(),
               'url' => $entity->toUrl("edit-form.$form_mode_name"),
-              'weight' => 100,
+              'weight' => 31,
             ],
           ];
         }

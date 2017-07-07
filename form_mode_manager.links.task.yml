@@ -1,7 +1,7 @@
 # Deriver to generation of task.
 form_mode_manager.entities:
   deriver: 'Drupal\form_mode_manager\Plugin\Derivative\FormModeManagerLocalTasks'
-  weight: 100
+  weight: 9
 
 # Settings Links task.
 form_mode_manager.admin_settings:
