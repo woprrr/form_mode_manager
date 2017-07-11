@@ -9,7 +9,9 @@ use Symfony\Component\Routing\Route;
 /**
  * Converter for form_mode_manager routes.
  *
- * @todo This is only used in list context now, we need to develop new list before.
+ * This Converter is only used in add_page context.
+ *
+ * @see \Drupal\form_mode_manager\Controller\EntityFormModeBase::addPage
  */
 class FormModeManagerConverter implements ParamConverterInterface {
 

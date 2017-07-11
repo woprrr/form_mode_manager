@@ -177,4 +177,35 @@ interface FormModeManagerInterface {
    */
   public function hasActiveFormMode($entity_type, $form_mode_id);
 
+  /**
+   * Set all entity handlers needed by form mode manager on entity type basis.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_definition
+   *   The entity type to alter.
+   */
+  public function setEntityHandlersPerFormModes(EntityTypeInterface $entity_definition);
+
+  /**
+   * Set new FormClass handler per form modes keyed by form mode name.
+   *
+   * This setter are the best way to alter the basic FormClass,
+   * for specific operation (form mode) @see http://bit.ly/2sL5L7W .
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_definition
+   *   The entity type to alter.
+   * @param string $form_mode_name
+   *   The form mode human name used by current entity definition.
+   */
+  public function setFormClassPerFormModes(EntityTypeInterface $entity_definition, $form_mode_name);
+
+  /**
+   * Set new LinkTemplate handler on entity definition basis.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_definition
+   *   The entity type to alter.
+   * @param string $form_mode_name
+   *   The form mode human name used by current entity definition.
+   */
+  public function setLinkTemplatePerFormModes(EntityTypeInterface $entity_definition, $form_mode_name);
+
 }

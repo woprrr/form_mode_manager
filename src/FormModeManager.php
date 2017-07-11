@@ -264,4 +264,37 @@ class FormModeManager implements FormModeManagerInterface {
     $this->formModesExcluded = $form_modes_to_exclude;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function setEntityHandlersPerFormModes(EntityTypeInterface $entity_definition) {
+    $form_modes = $this->getFormModesIdByEntity($entity_definition->id());
+    if (empty($form_modes)) {
+      return;
+    }
+
+    foreach ($form_modes as $form_mode_name) {
+      $this->setFormClassPerFormModes($entity_definition, $form_mode_name);
+      $this->setLinkTemplatePerFormModes($entity_definition, $form_mode_name);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setFormClassPerFormModes(EntityTypeInterface $entity_definition, $form_mode_name) {
+    if ($default_form = $entity_definition->getFormClass('default')) {
+      $entity_definition->setFormClass($form_mode_name, $default_form);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setLinkTemplatePerFormModes(EntityTypeInterface $entity_definition, $form_mode_name) {
+    if ($entity_definition->getFormClass($form_mode_name) && $entity_definition->hasLinkTemplate('edit-form')) {
+      $entity_definition->setLinkTemplate("edit-form.$form_mode_name", $entity_definition->getLinkTemplate('edit-form') . '/' . $form_mode_name);
+    }
+  }
+
 }

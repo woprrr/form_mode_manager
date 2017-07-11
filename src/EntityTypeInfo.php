@@ -73,19 +73,8 @@ class EntityTypeInfo implements ContainerInjectionInterface {
   public function entityTypeAlter(array &$entity_types) {
     $available_entity_types = array_keys($this->formModeManager->getAllFormModesDefinitions());
     foreach ($available_entity_types as $entity_type_id) {
-      /* @var \Drupal\Core\Entity\EntityTypeInterface $entity_definition */
       if ($entity_definition = $entity_types[$entity_type_id]) {
-        $form_modes = $this->formModeManager->getFormModesIdByEntity($entity_type_id);
-        foreach ($form_modes as $form_mode_name) {
-          if ($default_form = $entity_definition->getFormClass('default')) {
-            $entity_definition->setFormClass($form_mode_name, $default_form);
-          }
-
-          // Add one entity operation for "edit" context.
-          if ($entity_definition->getFormClass($form_mode_name) && $entity_definition->hasLinkTemplate('edit-form')) {
-            $entity_definition->setLinkTemplate("edit-form.$form_mode_name", $entity_definition->getLinkTemplate('edit-form') . '/' . $form_mode_name);
-          }
-        }
+        $this->formModeManager->setEntityHandlersPerFormModes($entity_definition);
       }
     }
   }
