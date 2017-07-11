@@ -2,7 +2,6 @@
 
 namespace Drupal\form_mode_manager\Controller;
 
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 
@@ -13,7 +12,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
  * @see \Drupal\form_mode_manager\Plugin\Derivative\FormModeManagerLocalAction
  * @see \Drupal\form_mode_manager\Plugin\Derivative\FormModeManagerLocalTasks
  */
-class UserFormModeController extends EntityFormModeBase implements ContainerInjectionInterface {
+class UserFormModeController extends EntityFormModeBase {
 
   /**
    * Provides the node submission form.
@@ -33,7 +32,7 @@ class UserFormModeController extends EntityFormModeBase implements ContainerInje
     if (empty($entity)) {
       $route_entity_type_info = $this->getEntityTypeFromRouteMatch($route_match);
       /* @var \Drupal\Core\Entity\EntityInterface $entity */
-      $entity = $this->entityTypeManager()->getStorage($route_entity_type_info['entity_type_id'])->create([
+      $entity = $this->entityTypeManager->getStorage($route_entity_type_info['entity_type_id'])->create([
         $route_entity_type_info['entity_key'] => $route_entity_type_info['bundle'],
       ]);
     }
@@ -42,7 +41,7 @@ class UserFormModeController extends EntityFormModeBase implements ContainerInje
     $operation = empty($form_mode_id) ? 'register' : $form_mode_id;
 
     if ($entity instanceof EntityInterface) {
-      return $this->entityFormBuilder()->getForm($entity, $operation);
+      return $this->entityFormBuilder->getForm($entity, $operation);
     }
 
     throw new \Exception('Invalid entity passed or inexistant form mode');

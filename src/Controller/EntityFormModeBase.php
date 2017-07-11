@@ -4,13 +4,16 @@ namespace Drupal\form_mode_manager\Controller;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\Cache;
-use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityFormBuilderInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Routing\UrlGeneratorTrait;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\form_mode_manager\FormModeManagerInterface;
 use Drupal\user\UserStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -22,7 +25,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @see \Drupal\form_mode_manager\Plugin\Derivative\FormModeManagerLocalAction
  * @see \Drupal\form_mode_manager\Plugin\Derivative\FormModeManagerLocalTasks
  */
-abstract class EntityFormModeBase extends ControllerBase implements ContainerInjectionInterface {
+abstract class EntityFormModeBase implements ContainerInjectionInterface {
+
+  use StringTranslationTrait;
+  use UrlGeneratorTrait;
 
   /**
    * The date formatter service.
@@ -53,6 +59,20 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
   protected $formModeManager;
 
   /**
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The entity form builder service.
+   *
+   * @var \Drupal\Core\Entity\EntityFormBuilderInterface
+   */
+  protected $entityFormBuilder;
+
+  /**
    * Constructs a EntityFormModeController object.
    *
    * @param \Drupal\Core\Render\RendererInterface $renderer
@@ -61,11 +81,17 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
    *   The current user.
    * @param \Drupal\form_mode_manager\FormModeManagerInterface $form_mode_manager
    *   The form mode manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\Entity\EntityFormBuilderInterface $entity_form_builder
+   *   The entity form builder service.
    */
-  public function __construct(RendererInterface $renderer, AccountInterface $account, FormModeManagerInterface $form_mode_manager) {
+  public function __construct(RendererInterface $renderer, AccountInterface $account, FormModeManagerInterface $form_mode_manager, EntityTypeManagerInterface $entity_manager, EntityFormBuilderInterface $entity_form_builder) {
     $this->renderer = $renderer;
     $this->account = $account;
     $this->formModeManager = $form_mode_manager;
+    $this->entityTypeManager = $entity_manager;
+    $this->entityFormBuilder = $entity_form_builder;
   }
 
   /**
@@ -75,7 +101,9 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
     return new static(
       $container->get('renderer'),
       $container->get('current_user'),
-      $container->get('form_mode.manager')
+      $container->get('form_mode.manager'),
+      $container->get('entity_type.manager'),
+      $container->get('entity.form_builder')
     );
   }
 
@@ -99,10 +127,10 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
   public function addPage(EntityTypeInterface $entity_type, $form_mode_name) {
     $entity_type_name = $entity_type->getBundleEntityType();
     $entity_type_id = $entity_type->id();
-    $entity_type_cache_tags = $this->entityTypeManager()
+    $entity_type_cache_tags = $this->entityTypeManager
       ->getDefinition($entity_type_name)
       ->getListCacheTags();
-    $entity_type_definitions = $this->entityTypeManager()
+    $entity_type_definitions = $this->entityTypeManager
       ->getStorage($entity_type_name)
       ->loadMultiple();
 
@@ -116,9 +144,9 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
     $content = [];
     foreach ($entity_type_definitions as $bundle) {
       $bundle_id = $bundle->id();
-      $access = $this->entityTypeManager()
+      $access = $this->entityTypeManager
         ->getAccessControlHandler($entity_type_id)
-        ->createAccess($bundle_id, $this->currentUser(), [], TRUE);
+        ->createAccess($bundle_id, $this->account, [], TRUE);
 
       if ($access->isAllowed() && $this->formModeManager->isActive($entity_type_id, $bundle_id, $form_mode_name)) {
         $content[$bundle_id] = $bundle;
@@ -157,7 +185,7 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
     if (empty($entity)) {
       $route_entity_type_info = $this->getEntityTypeFromRouteMatch($route_match);
       /* @var \Drupal\Core\Entity\EntityInterface $entity */
-      $entity = $this->entityTypeManager()
+      $entity = $this->entityTypeManager
         ->getStorage($route_entity_type_info['entity_type_id'])
         ->create([
           $route_entity_type_info['entity_key'] => $route_entity_type_info['bundle'],
@@ -168,7 +196,7 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
       ->getDefault('_entity_form'));
     $operation = empty($form_mode_id) ? 'default' : $form_mode_id;
     if ($entity instanceof EntityInterface) {
-      return $this->entityFormBuilder()->getForm($entity, $operation);
+      return $this->entityFormBuilder->getForm($entity, $operation);
     }
 
     throw new \Exception('Invalide entity passed or inexistant form mode');
@@ -212,6 +240,7 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
    *   The page title.
    */
   public function pageTitle(RouteMatchInterface $route_match, $operation) {
+    /** @var \Drupal\Core\Config\Entity\ConfigEntityBase $entity_storage */
     $entity_storage = $this->getEntityBundle($route_match);
     $form_mode_label = $route_match->getRouteObject()
       ->getOption('parameters')['form_mode']['label'];
@@ -238,13 +267,13 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
     if (empty($entity)) {
       $route_entity_type_info = $this->getEntityTypeFromRouteMatch($route_match);
       /* @var \Drupal\Core\Entity\EntityTypeInterface $bundle */
-      $bundle = $this->entityTypeManager()
+      $bundle = $this->entityTypeManager
         ->getStorage($route_entity_type_info['bundle_entity_type'])
         ->load($route_entity_type_info['bundle']);
     }
     else {
       /* @var \Drupal\Core\Entity\EntityTypeInterface $bundle */
-      $bundle = $this->entityTypeManager()
+      $bundle = $this->entityTypeManager
         ->getStorage($route_match->getRouteObject()
           ->getOption('_form_mode_manager_bundle_entity_type_id'))
         ->load($entity->bundle());
@@ -252,7 +281,7 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
 
     if (empty($bundle)) {
       /* @var \Drupal\Core\Entity\EntityStorageInterface $bundle */
-      $bundle = $this->entityTypeManager()
+      $bundle = $this->entityTypeManager
         ->getStorage($route_match->getRouteObject()
           ->getOption('_form_mode_manager_bundle_entity_type_id'));
     }
@@ -326,7 +355,7 @@ abstract class EntityFormModeBase extends ControllerBase implements ContainerInj
     $form_mode = $this->formModeManager->getFormModeMachineName($route->getDefault('_entity_form'));
     $bundle = $route_match->getParameter($bundle_entity_type_id);
     $form_mode_definition = $this->formModeManager->getActiveDisplaysByBundle($entity_type_id, $bundle);
-    $entity_type_key = $this->entityTypeManager()
+    $entity_type_key = $this->entityTypeManager
       ->getDefinition($entity_type_id)
       ->getKey('bundle');
 

@@ -11,6 +11,6 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
  * @see \Drupal\form_mode_manager\Plugin\Derivative\FormModeManagerLocalAction
  * @see \Drupal\form_mode_manager\Plugin\Derivative\FormModeManagerLocalTasks
  */
-class EntityFormModeController extends EntityFormModeBase implements ContainerInjectionInterface {
+class EntityFormModeController extends EntityFormModeBase {
 
 }
