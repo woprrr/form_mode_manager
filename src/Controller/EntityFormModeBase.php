@@ -245,8 +245,7 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
     $form_mode_label = $route_match->getRouteObject()
       ->getOption('parameters')['form_mode']['label'];
     return $this->t('@op @name as @form_mode_label', [
-      '@name' => (!$entity_storage instanceof UserStorageInterface) ? $entity_storage->get('name') : $entity_storage->getEntityType()
-        ->id(),
+      '@name' => $entity_storage->label(),
       '@form_mode_label' => $form_mode_label,
       '@op' => $operation,
     ]);
