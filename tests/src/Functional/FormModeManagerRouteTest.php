@@ -94,6 +94,38 @@ class FormModeManagerRouteTest extends FormModeManagerBase {
   }
 
   /**
+   * Asserts User Edit Form Mode Manager routes exists.
+   */
+  public function testUserEditFormModeManagerRoutes() {
+    $this->drupalLogin($this->adminUser);
+    $user_form_mode_id = $this->formModeManager->getFormModeMachineName($this->userFormMode->id());
+
+    $this->drupalGet("user/{$this->rootUser->id()}/edit/$user_form_mode_id");
+    $this->assertSession()->statusCodeEquals(200);
+
+    // Test not found form mode edit.
+    $user_form_mode_id = $this->formModeManager->getFormModeMachineName($this->userFormMode->id());
+    $this->drupalGet("user/{$this->adminUser->id()}/edit/not-valid-fm");
+    $this->assertSession()->statusCodeEquals(404);
+
+    // Test with just permission create xxx content.
+    Role::load($this->testUser->getRoles()[1])
+      ->grantPermission("administer users")
+      ->save();
+    $this->drupalLogin($this->testUser);
+    $this->drupalGet("user/{$this->testUser->id()}/edit/$user_form_mode_id");
+    $this->assertSession()->statusCodeEquals(403);
+
+    // Test with permission edit any xxx content and use xxx form mode.
+    Role::load($this->testUser->getRoles()[1])
+      ->grantPermission("use {$this->userFormMode->id()} form mode")
+      ->save();
+    $this->drupalLogin($this->testUser);
+    $this->drupalGet("user/{$this->adminUser->id()}/edit/$user_form_mode_id");
+    $this->assertSession()->statusCodeEquals(200);
+  }
+
+  /**
    * Asserts List With One Form Mode Manager routes exists.
    */
   public function testListWithOneFormModeManagerRoutes() {

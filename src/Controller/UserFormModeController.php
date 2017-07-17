@@ -52,16 +52,46 @@ class UserFormModeController extends EntityFormModeBase {
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
+   * @param string $operation
+   *   Name of current context operation to display title (create/edit).
+   *
+   * @return string
+   *   The page title.
+   */
+  public function pageTitle(RouteMatchInterface $route_match, $operation) {
+    $form_mode_label = $route_match->getRouteObject()
+      ->getOption('parameters')['form_mode']['label'];
+    return $this->t('@op @name as @form_mode_label', [
+      '@name' => 'User',
+      '@form_mode_label' => $form_mode_label,
+      '@op' => $operation,
+    ]);
+  }
+
+  /**
+   * The _title_callback for the entity.add routes.
+   *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The current route match.
    *
    * @return string
    *   The page title.
    */
   public function addPageTitle(RouteMatchInterface $route_match) {
-    $form_mode_label = $route_match->getRouteObject()->getOption('parameters')['form_mode']['label'];
-    return $this->t('Create @name as @form_mode_label', [
-      '@name' => 'User',
-      '@form_mode_label' => $form_mode_label,
-    ]);
+    return $this->pageTitle($route_match, $this->t('Create'));
+  }
+
+  /**
+   * The _title_callback for the entity.add routes.
+   *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The current route match.
+   *
+   * @return string
+   *   The page title.
+   */
+  public function editPageTitle(RouteMatchInterface $route_match) {
+    return $this->pageTitle($route_match, $this->t('Edit'));
   }
 
   /**

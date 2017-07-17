@@ -2,8 +2,6 @@
 
 namespace Drupal\form_mode_manager\Controller;
 
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-
 /**
  * Controller for entity form mode support.
  *

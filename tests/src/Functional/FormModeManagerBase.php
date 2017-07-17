@@ -84,6 +84,13 @@ abstract class FormModeManagerBase extends BrowserTestBase {
   protected $nodeFormMode;
 
   /**
+   * Basic user form mode to test.
+   *
+   * @var \Drupal\Core\Entity\EntityDisplayModeInterface
+   */
+  protected $userFormMode;
+
+  /**
    * Basic form mode to test.
    *
    * @var \Drupal\form_mode_manager\FormModeManagerInterface
@@ -107,17 +114,14 @@ abstract class FormModeManagerBase extends BrowserTestBase {
     ]);
 
     $this->nodeFormMode = $this->drupalCreateFormMode('node');
+    $this->userFormMode = $this->drupalCreateFormMode('user');
 
     $this->container->get('router.builder')->rebuildIfNeeded();
 
     $this->drupalLogin($this->rootUser);
 
-    $this->drupalGet("admin/structure/types/manage/{$this->nodeTypeFmm1->getEntityTypeId()}/form-display");
-
-    $form_mode_id = $this->nodeFormMode->id();
-    $this->formModeManager = $this->container->get('form_mode.manager');
-    $edit = ["display_modes_custom[{$this->formModeManager->getFormModeMachineName($form_mode_id)}]" => TRUE];
-    $this->drupalPostForm("admin/structure/types/manage/fmm_test/form-display", $edit, t('Save'));
+    $this->setUpNodeFormMode();
+    $this->setUpUserFormMode();
     $this->setUpUsers();
   }
 
@@ -139,11 +143,37 @@ abstract class FormModeManagerBase extends BrowserTestBase {
       'administer nodes',
       'administer display modes',
       'use node.default form mode',
+      'use user.default form mode',
       'use ' . $this->nodeFormMode->id() . ' form mode',
+      'use ' . $this->userFormMode->id() . ' form mode',
       'edit any ' . $this->nodeTypeFmm1->id() . ' content',
       'create ' . $this->nodeTypeFmm1->id() . ' content',
     ]);
     $this->testUser = $this->drupalCreateUser(['access content']);
+  }
+
+  /**
+   * Helper method to create Form mode onto Node entity needed for tests.
+   */
+  public function setUpUserFormMode() {
+    $this->setUpFormMode("admin/config/people/accounts/form-display", $this->userFormMode->id());
+  }
+
+  /**
+   * Helper method to create Form mode onto Node entity needed for tests.
+   */
+  public function setUpNodeFormMode() {
+    $this->setUpFormMode("admin/structure/types/manage/{$this->nodeTypeFmm1->id()}/form-display", $this->nodeFormMode->id());
+  }
+
+  /**
+   * Helper method to create all users needed for tests.
+   */
+  public function setUpFormMode($path, $form_mode_id) {
+    $this->drupalGet($path);
+    $this->formModeManager = $this->container->get('form_mode.manager');
+    $edit = ["display_modes_custom[{$this->formModeManager->getFormModeMachineName($form_mode_id)}]" => TRUE];
+    $this->drupalPostForm($path, $edit, t('Save'));
   }
 
   /**

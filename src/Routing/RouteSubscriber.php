@@ -327,10 +327,27 @@ class RouteSubscriber extends RouteSubscriberBase {
 
     $entity_edit_route = $collection->get("entity.{$entity_type->id()}.edit_form");
     if ($has_active_mode && !empty($entity_edit_route)) {
-      return $this->setRoutes($entity_edit_route, $entity_type, $form_mode);
+      $route = $this->setRoutes($entity_edit_route, $entity_type, $form_mode);
+      $this->userEditEnhancements($route, $entity_type->id());
+      return $route;
     }
 
     return NULL;
+  }
+
+  /**
+   * Set a specific callback for Edit context of User entity.
+   *
+   * @param \Symfony\Component\Routing\Route $route
+   *   The route object of entity.
+   * @param string $entity_type_id
+   *   The ID of the entity type.
+   */
+  private function userEditEnhancements(Route $route, $entity_type_id) {
+    if ('user' !== $entity_type_id) {
+      return;
+    }
+    $route->setDefault('_title_callback', '\Drupal\form_mode_manager\Controller\UserFormModeController::editPageTitle');
   }
 
   /**
