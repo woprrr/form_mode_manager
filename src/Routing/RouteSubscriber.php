@@ -90,8 +90,11 @@ class RouteSubscriber extends RouteSubscriberBase {
       $collection->add("entity.$entity_type_id.edit_form", $this->routeEnhancer($route, $entity_type_id));
     }
 
-    if ($route = $collection->get("entity.$entity_type_id.add_form")) {
+    if ("node" !== $entity_type_id && $route = $collection->get("entity.$entity_type_id.add_form")) {
       $collection->add("entity.$entity_type_id.add_form", $this->routeEnhancer($route, $entity_type_id));
+    }
+    elseif ($route = $collection->get("$entity_type_id.add")) {
+      $collection->add("$entity_type_id.add", $this->routeEnhancer($route, $entity_type_id));
     }
   }
 

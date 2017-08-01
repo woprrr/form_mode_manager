@@ -40,6 +40,7 @@ class FormModeManagerRouteTest extends FormModeManagerBase {
     // Test add with juste permission create xxx content.
     Role::load($this->testUser->getRoles()[1])
       ->grantPermission("create {$this->nodeTypeFmm1->id()} content")
+      ->grantPermission("use node.default form mode")
       ->save();
     $this->drupalLogin($this->testUser);
     $this->drupalGet("node/add/{$this->nodeTypeFmm1->id()}");
