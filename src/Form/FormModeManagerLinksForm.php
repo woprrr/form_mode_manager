@@ -102,7 +102,7 @@ class FormModeManagerLinksForm extends ConfigFormBase {
       '#type' => 'vertical_tabs',
     ];
 
-    $form_modes = array_keys($this->formModeManager->getAllFormModesDefinitions());
+    $form_modes = array_keys($this->formModeManager->getAllFormModesDefinitions(TRUE));
     foreach ($form_modes as $entity_type_id) {
       $form['local_taks']["{$entity_type_id}_local_taks"] = [
         '#type' => 'details',
@@ -130,7 +130,7 @@ class FormModeManagerLinksForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
 
-    $form_modes = array_keys($this->formModeManager->getAllFormModesDefinitions());
+    $form_modes = array_keys($this->formModeManager->getAllFormModesDefinitions(TRUE));
     foreach ($form_modes as $entity_type_id) {
       $this->settings->set("local_tasks.{$entity_type_id}.position", $form_state->getValue('tasks_location_' . $entity_type_id));
     }

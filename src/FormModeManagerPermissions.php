@@ -3,6 +3,7 @@
 namespace Drupal\form_mode_manager;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\Entity\EntityFormMode;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -110,25 +111,25 @@ class FormModeManagerPermissions implements ContainerInjectionInterface {
     $form_modes_storage = $this->entityTypeManager->getStorage('entity_form_mode');
     foreach ($form_modes as $form_mode) {
       $form_mode_loaded = $form_modes_storage->loadByProperties(['id' => "$entity_type_id.$form_mode"]);
-      /** @var \Drupal\Core\Entity\Entity\EntityFormMode $form_mode_loaded */
       $form_mode_loaded = reset($form_mode_loaded);
+      if ($form_mode_loaded instanceof EntityFormMode) {
+        $placeholders = array_merge($entity_placeholder, [
+          '%form_mode_label' => $form_mode_loaded->label(),
+          ':url' => $form_mode_loaded->url(),
+        ]);
 
-      $placeholders = array_merge($entity_placeholder, [
-        '%form_mode_label' => $form_mode_loaded->label(),
-        ':url' => $form_mode_loaded->url(),
-      ]);
-
-      $perms_per_mode += [
-        "use {$form_mode_loaded->id()} form mode" => [
-          'title' => $this->t('Use <a href=":url">%form_mode_label</a> form mode with <b>%type_id</b> entity', $placeholders),
-          'description' => [
-            '#prefix' => '<em>',
-            '#markup' => $this->t('This permission control access of <b>%type_id</b> entity with %form_mode_label form mode.', $placeholders),
-            '#suffix' => '</em>',
+        $perms_per_mode += [
+          "use {$form_mode_loaded->id()} form mode" => [
+            'title' => $this->t('Use <a href=":url">%form_mode_label</a> form mode with <b>%type_id</b> entity', $placeholders),
+            'description' => [
+              '#prefix' => '<em>',
+              '#markup' => $this->t('This permission control access of <b>%type_id</b> entity with %form_mode_label form mode.', $placeholders),
+              '#suffix' => '</em>',
+            ],
+            'restrict access' => TRUE,
           ],
-          'restrict access' => TRUE,
-        ],
-      ];
+        ];
+      }
     }
 
     return $perms_per_mode;

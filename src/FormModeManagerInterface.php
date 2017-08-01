@@ -58,10 +58,13 @@ interface FormModeManagerInterface {
   /**
    * Gets the entity form mode info for all entity types used.
    *
+   * @param bool $ignore_excluded
+   *   Joker to determine if form modes to exclude list are used or ignored.
+   *
    * @return array
    *   The collection without uneeded form modes.
    */
-  public function getAllFormModesDefinitions();
+  public function getAllFormModesDefinitions($ignore_excluded = FALSE);
 
   /**
    * Filter a form mode collection to exclude all desired form mode id.
@@ -70,11 +73,24 @@ interface FormModeManagerInterface {
    *   A form mode collection to be filtered.
    * @param string $entity_type_id
    *   The entity type ID of entity.
+   * @param bool $ignore_excluded
+   *   Joker to determine if form modes to exclude list are used or ignored.
    *
    * @return array
    *   The collection without uneeded form modes.
    */
-  public function filterExcludedFormModes(array &$form_mode, $entity_type_id);
+  public function filterExcludedFormModes(array &$form_mode, $entity_type_id, $ignore_excluded);
+
+  /**
+   * Retrieve the list of form_modes unavailable to expose by Form Mode Manager.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID of entity.
+   *
+   * @return array[]
+   *   The list of form modes to exclude.
+   */
+  public function getFormModeExcluded($entity_type_id);
 
   /**
    * Determine if form_mode definition passed is valid.

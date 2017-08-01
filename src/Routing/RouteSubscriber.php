@@ -146,16 +146,18 @@ class RouteSubscriber extends RouteSubscriberBase {
   private function addFormModesRoutes(RouteCollection $collection, EntityTypeInterface $entity_type, array $form_modes) {
     $entity_type_id = $entity_type->id();
     foreach ($form_modes as $form_mode_name => $form_mode) {
-      if ($route = $this->getFormModeManagerAddRoute($collection, $entity_type, $form_mode)) {
-        $collection->add("entity.$entity_type_id.add_form.$form_mode_name", $route);
-      }
+      if ($this->formModeManager->isValidFormMode($form_mode)) {
+        if ($route = $this->getFormModeManagerAddRoute($collection, $entity_type, $form_mode)) {
+          $collection->add("entity.$entity_type_id.add_form.$form_mode_name", $route);
+        }
 
-      if ($route = $this->getFormModeManagerEditRoute($collection, $entity_type, $form_mode)) {
-        $collection->add("entity.$entity_type_id.edit_form.$form_mode_name", $route);
-      }
+        if ($route = $this->getFormModeManagerEditRoute($collection, $entity_type, $form_mode)) {
+          $collection->add("entity.$entity_type_id.edit_form.$form_mode_name", $route);
+        }
 
-      if ($route = $this->getFormModeManagerListPageRoute($entity_type, $form_mode)) {
-        $collection->add("form_mode_manager.$entity_type_id.add_page.$form_mode_name", $route);
+        if ($route = $this->getFormModeManagerListPageRoute($entity_type, $form_mode)) {
+          $collection->add("form_mode_manager.$entity_type_id.add_page.$form_mode_name", $route);
+        }
       }
     }
   }
