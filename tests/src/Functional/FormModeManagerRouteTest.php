@@ -19,6 +19,42 @@ class FormModeManagerRouteTest extends FormModeManagerBase {
   protected $node1;
 
   /**
+   * Asserts that anonymous had access to a specific form mode, create and edit node.
+   */
+  public function testAnonymousSpecificFormModeManagerRoutes() {
+    $node_form_mode_id = $this->formModeManager->getFormModeMachineName($this->nodeFormMode->id());
+
+    $this->drupalLogin($this->anonymousUser);
+    Role::load($this->anonymousUser->getRoles()[1])
+      ->grantPermission("use {$this->nodeFormMode->id()} form mode")
+      ->grantPermission("create {$this->nodeTypeFmm1->id()} content")
+      ->grantPermission("edit own {$this->nodeTypeFmm1->id()} content")
+      ->save();
+
+    // Add a node with custum form mode.
+    $this->drupalGet("node/add/{$this->nodeTypeFmm1->id()}/$node_form_mode_id");
+    $this->assertSession()->statusCodeEquals(200);
+
+    // Add a node with default form mode not available.
+    $this->drupalGet("node/add/{$this->nodeTypeFmm1->id()}");
+    $this->assertSession()->statusCodeEquals(403);
+
+    // Add a node with custum form mode.
+    $this->node1 = $this->drupalCreateNode([
+      'title' => 'Test node',
+      'type' => $this->nodeTypeFmm1->id(),
+    ]);
+
+    // Edit node  with custum form mode.
+    $this->drupalGet("node/{$this->node1->id()}/edit/{$node_form_mode_id}");
+    $this->assertSession()->statusCodeEquals(200);
+
+    // Edit a node with default form mode not available.
+    $this->drupalGet("node/{$this->node1->id()}/edit");
+    $this->assertSession()->statusCodeEquals(403);
+  }
+
+  /**
    * Asserts Add Form Mode Manager routes exists.
    */
   public function testAddFormModeManagerRoutes() {
