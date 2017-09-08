@@ -1,7 +1,7 @@
 services:
   form_mode_manager.route_subscriber:
     class: Drupal\form_mode_manager\Routing\RouteSubscriber
-    arguments: ['@entity_type.manager', '@entity_display.repository', '@form_mode.manager']
+    arguments: ['@entity_type.manager', '@entity_display.repository', '@form_mode.manager', '@plugin.manager.entity_routing_map']
     tags:
       - { name: event_subscriber }
   form_mode_manager.param_converter:
@@ -11,4 +11,7 @@ services:
       - { name: paramconverter }
   form_mode.manager:
     class: Drupal\form_mode_manager\FormModeManager
-    arguments: ['@entity_type.manager', '@config.factory', '@entity_display.repository', '@entity_type.bundle.info']
+    arguments: ['@entity_type.manager', '@config.factory', '@entity_display.repository', '@entity_type.bundle.info', '@plugin.manager.entity_routing_map']
+  plugin.manager.entity_routing_map:
+    class: Drupal\form_mode_manager\EntityRoutingMapManager
+    parent: default_plugin_manager

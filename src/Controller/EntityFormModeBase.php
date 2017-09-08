@@ -15,6 +15,7 @@ use Drupal\Core\Routing\UrlGeneratorTrait;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\form_mode_manager\FormModeManagerInterface;
+use Drupal\form_mode_manager\EntityRoutingMapManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -72,6 +73,13 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
   protected $entityFormBuilder;
 
   /**
+   * The Routes Manager Plugin.
+   *
+   * @var \Drupal\form_mode_manager\EntityRoutingMapManager
+   */
+  protected $entityRoutingMap;
+
+  /**
    * Constructs a EntityFormModeController object.
    *
    * @param \Drupal\Core\Render\RendererInterface $renderer
@@ -84,13 +92,16 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
    *   The entity type manager.
    * @param \Drupal\Core\Entity\EntityFormBuilderInterface $entity_form_builder
    *   The entity form builder service.
+   * @param \Drupal\form_mode_manager\EntityRoutingMapManager $plugin_routes_manager
+   *   Plugin EntityRoutingMap to retrieve entity form operation routes.
    */
-  public function __construct(RendererInterface $renderer, AccountInterface $account, FormModeManagerInterface $form_mode_manager, EntityTypeManagerInterface $entity_manager, EntityFormBuilderInterface $entity_form_builder) {
+  public function __construct(RendererInterface $renderer, AccountInterface $account, FormModeManagerInterface $form_mode_manager, EntityTypeManagerInterface $entity_manager, EntityFormBuilderInterface $entity_form_builder, EntityRoutingMapManager $plugin_routes_manager) {
     $this->renderer = $renderer;
     $this->account = $account;
     $this->formModeManager = $form_mode_manager;
     $this->entityTypeManager = $entity_manager;
     $this->entityFormBuilder = $entity_form_builder;
+    $this->entityRoutingMap = $plugin_routes_manager;
   }
 
   /**
@@ -102,7 +113,8 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
       $container->get('current_user'),
       $container->get('form_mode.manager'),
       $container->get('entity_type.manager'),
-      $container->get('entity.form_builder')
+      $container->get('entity.form_builder'),
+      $container->get('plugin.manager.entity_routing_map')
     );
   }
 
@@ -135,6 +147,7 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
 
     $build = [
       '#theme' => 'form_mode_manager_add_list',
+      '#entity_type' => $entity_type,
       '#cache' => [
         'tags' => Cache::mergeTags($entity_type_cache_tags, $this->formModeManager->getListCacheTags()),
       ],
@@ -156,7 +169,8 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
     // Bypass the entity/add listing if only one content type is available.
     if (1 == count($content)) {
       $bundle = array_shift($content);
-      return $this->redirect("entity.$entity_type_id.add_form.$form_mode_name", [
+      $entity_routes_infos = $this->entityRoutingMap->createInstance($entity_type_id, ['entityTypeId' => $entity_type_id])->getPluginDefinition();
+      return $this->redirect($entity_routes_infos['operations']['add_form'] . ".$form_mode_name", [
         $entity_type_name => $bundle->id(),
       ]);
     }

@@ -52,7 +52,11 @@ function form_mode_manager_entity_operation_alter(array &$operations, EntityInte
 function form_mode_manager_theme() {
   return [
     'form_mode_manager_add_list' => [
-      'variables' => ['content' => NULL, 'form_mode' => NULL],
+      'variables' => [
+        'content' => NULL,
+        'form_mode' => NULL,
+        'entity_type' => NULL,
+      ],
     ],
   ];
 }
@@ -70,14 +74,18 @@ function form_mode_manager_theme() {
  */
 function template_preprocess_form_mode_manager_add_list(array &$variables) {
   $variables['types'] = [];
+  $entity_type_id = $variables['entity_type']->id();
+  /** @var \Drupal\form_mode_manager\EntityRoutingMapBase $entity_operation_mapping */
+  $entity_operation_mapping = \Drupal::service("plugin.manager.entity_routing_map")
+    ->createInstance($entity_type_id, ['entityTypeId' => $entity_type_id]);
   if (!empty($variables['content'])) {
     /** @var \Drupal\Core\Config\Entity\ConfigEntityBundleBase $type */
     foreach ($variables['content'] as $type) {
+      $route_name = $entity_operation_mapping->getOperation('add_form') . ".{$variables['form_mode']}";
       $variables['types'][$type->id()] = [
         'type' => $type->id(),
-        'add_link' => Link::fromTextAndUrl($type->label(), new Url("entity.{$type->getEntityType()->getProvider()}.add_form.{$variables['form_mode']}", [$type->getEntityTypeId() => $type->id()])),
+        'add_link' => Link::fromTextAndUrl($type->label(), new Url($route_name, [$type->getEntityTypeId() => $type->id()])),
         'description' => [
-          // Do verify it because "contact" entity not have description.
           '#markup' => (method_exists($type, 'getDescription')) ? $type->getDescription() : $type->label(),
         ],
       ];

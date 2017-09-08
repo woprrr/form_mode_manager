@@ -39,16 +39,6 @@ abstract class FormModeManagerBase extends BrowserTestBase {
   ];
 
   /**
-   * Routes name of Form mode manager ui(s).
-   *
-   * @var string[]
-   */
-  public static $adminRoutesNames = [
-    'form_mode_manager.admin_settings',
-    'form_mode_manager.admin_settings_links_task',
-  ];
-
-  /**
    * An user with Anonymous permissions.
    *
    * @var \Drupal\user\UserInterface

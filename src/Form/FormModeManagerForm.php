@@ -133,10 +133,12 @@ class FormModeManagerForm extends ConfigFormBase {
     $this->settings->save();
 
     $this->cacheTagsInvalidator->invalidateTags([
-      'local_action',
-      'entity_types',
-      'rendered',
       'routes',
+      'rendered',
+      'local_tasks',
+      'local_task',
+      'local_action',
+      'entity_bundles',
     ]);
   }
 

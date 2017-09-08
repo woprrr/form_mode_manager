@@ -49,6 +49,13 @@ class FormModeManager implements FormModeManagerInterface {
   public $formModesExcluded;
 
   /**
+   * The Routes Manager Plugin.
+   *
+   * @var \Drupal\form_mode_manager\EntityRoutingMapManager
+   */
+  protected $entityRoutingMap;
+
+  /**
    * Constructs a FormDisplayManager object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -59,12 +66,15 @@ class FormModeManager implements FormModeManagerInterface {
    *   The entity display repository.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
    *   The entity type bundle info.
+   * @param \Drupal\form_mode_manager\EntityRoutingMapManager $plugin_routes_manager
+   *   Plugin EntityRoutingMap to retrieve entity form operation routes.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EntityDisplayRepositoryInterface $entity_display_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, EntityDisplayRepositoryInterface $entity_display_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, EntityRoutingMapManager $plugin_routes_manager) {
     $this->entityTypeManager = $entity_type_manager;
     $this->configFactory = $config_factory;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
+    $this->entityRoutingMap = $plugin_routes_manager;
     $this->setFormModesToExclude();
   }
 
@@ -295,11 +305,11 @@ class FormModeManager implements FormModeManagerInterface {
    * {@inheritdoc}
    */
   public function setFormClassPerFormModes(EntityTypeInterface $entity_definition, $form_mode_name) {
-    if ("user" !== $entity_definition->id() && $default_form = $entity_definition->getFormClass('default')) {
+    $entity_type_id = $entity_definition->id();
+    /** @var \Drupal\form_mode_manager\EntityRoutingMapBase $route_mapper_plugin */
+    $route_mapper_plugin = $this->entityRoutingMap->createInstance($entity_type_id, ['entityTypeId' => $entity_type_id]);
+    if ($default_form = $entity_definition->getFormClass($route_mapper_plugin->getDefaultFormClass())) {
       $entity_definition->setFormClass($form_mode_name, $default_form);
-    }
-    elseif ($register_form = $entity_definition->getFormClass('register')) {
-      $entity_definition->setFormClass($form_mode_name, $register_form);
     }
   }
 
