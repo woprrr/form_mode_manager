@@ -21,7 +21,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
   /**
    * Namespace of Form Mode Manager EntityFormDisplayEditForm overrides.
    */
-  const FFM_ENTITY_FORM_DISPLAY_EDIT = 'Drupal\form_mode_manager\Form\FormModeManagerDisplayEditForm';
+  const FMM_ENTITY_FORM_DISPLAY_EDIT = 'Drupal\form_mode_manager\Form\FormModeManagerDisplayEditForm';
 
   /**
    * The current user.
@@ -90,7 +90,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    * @see hook_entity_type_build()
    */
   public function entityTypeBuild(array &$entity_types) {
-    $entity_types['entity_form_display']->setFormClass('edit', self::FFM_ENTITY_FORM_DISPLAY_EDIT);
+    $entity_types['entity_form_display']->setFormClass('edit', self::FMM_ENTITY_FORM_DISPLAY_EDIT);
   }
 
   /**
