@@ -263,6 +263,8 @@ class RouteSubscriber extends RouteSubscriberBase {
    *   The entity type definition.
    * @param array $form_mode
    *   The form mode info.
+   * @param string $route_name
+   *   The route name.
    *
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.

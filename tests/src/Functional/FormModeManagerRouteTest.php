@@ -19,7 +19,7 @@ class FormModeManagerRouteTest extends FormModeManagerBase {
   protected $node1;
 
   /**
-   * Asserts that anonymous had access to a specific form mode, create and edit node.
+   * Asserts that anon had access to a specific form mode, create and edit node.
    */
   public function testAnonymousSpecificFormModeManagerRoutes() {
     $node_form_mode_id = $this->formModeManager->getFormModeMachineName($this->nodeFormMode->id());

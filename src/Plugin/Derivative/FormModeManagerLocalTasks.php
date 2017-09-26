@@ -107,7 +107,7 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
    * Set the default tasks on each entities.
    *
    * @param string $entity_type_id
-   *    The entity type ID.
+   *   The entity type ID.
    */
   private function setDefaultTasks($entity_type_id) {
     $this->derivatives["form_mode_manager.$entity_type_id.default.task_tab"] = [
@@ -127,9 +127,9 @@ class FormModeManagerLocalTasks extends DeriverBase implements ContainerDeriverI
    * @param array $form_mode
    *   An associative array represent a DisplayForm entity.
    * @param string $entity_type_id
-   *    The entity type ID.
+   *   The entity type ID.
    * @param bool $is_primary_tasks
-   *    True if we need to place tasks on primary level.
+   *   True if we need to place tasks on primary level.
    */
   private function setFormModesTasks(array $form_mode, $entity_type_id, $is_primary_tasks) {
     $this->setFormModesTasksBase($form_mode, $entity_type_id);
