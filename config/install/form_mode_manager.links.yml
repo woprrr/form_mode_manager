@@ -13,4 +13,4 @@ local_tasks:
     position: secondary
   taxonomy_term:
     position: secondary
-langcode: fr
+langcode: en
