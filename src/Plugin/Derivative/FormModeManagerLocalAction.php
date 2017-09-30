@@ -54,8 +54,8 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
           $this->setDefaultLocalTask($form_mode, $entity_type_id, $form_mode_name);
 
           if ($this->isUserEntityType($entity_type_id)) {
-            $this->derivatives["form_mode_manager.{$form_mode['id']}"]['route_name'] = "user.admin_create.$form_mode_name";
-            unset($this->derivatives["form_mode_manager.{$form_mode['id']}"]['route_parameters']);
+            $this->derivatives[$form_mode['id']]['route_name'] = "user.admin_create.$form_mode_name";
+            unset($this->derivatives[$form_mode['id']]['route_parameters']);
           }
 
           $this->setNodeEntityType($form_mode, $entity_type_id);
@@ -81,7 +81,7 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
    *   A form mode name.
    */
   public function setDefaultLocalTask(array $form_mode, $entity_type_id, $form_mode_name) {
-    $this->derivatives["form_mode_manager.{$form_mode['id']}"] = [
+    $this->derivatives[$form_mode['id']] = [
       'route_name' => "form_mode_manager.$entity_type_id.add_page.$form_mode_name",
       'title' => $this->t('Add @entity_label as @form_mode', [
         '@form_mode' => $form_mode['label'],
@@ -116,7 +116,7 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
    */
   public function setNodeEntityType(array $form_mode, $entity_type_id) {
     if ('node' === $entity_type_id) {
-      $this->derivatives["form_mode_manager.{$form_mode['id']}"]['appears_on'] = ['system.admin_content'];
+      $this->derivatives[$form_mode['id']]['appears_on'] = ['system.admin_content'];
     }
   }
 
@@ -130,7 +130,7 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
    */
   public function setMediaEntityType(array $form_mode, $entity_type_id) {
     if ('media' === $entity_type_id) {
-      $this->derivatives["form_mode_manager.{$form_mode['id']}"]['appears_on'] = ['view.media.media_page_list'];
+      $this->derivatives[$form_mode['id']]['appears_on'] = ['view.media.media_page_list'];
     }
   }
 
@@ -144,8 +144,8 @@ class FormModeManagerLocalAction extends DeriverBase implements ContainerDeriver
    */
   public function setTaxonomyTermEntityType(array $form_mode, $entity_type_id) {
     if ('taxonomy_term' === $entity_type_id) {
-      $this->derivatives["form_mode_manager.{$form_mode['id']}"]['appears_on'] = ['entity.taxonomy_vocabulary.overview_form'];
-      $this->derivatives["form_mode_manager.{$form_mode['id']}"]['title'] = $this->t('Add @entity_label as @form_mode', [
+      $this->derivatives[$form_mode['id']]['appears_on'] = ['entity.taxonomy_vocabulary.overview_form'];
+      $this->derivatives[$form_mode['id']]['title'] = $this->t('Add @entity_label as @form_mode', [
         '@form_mode' => $form_mode['label'],
         '@entity_label' => 'term',
       ]);

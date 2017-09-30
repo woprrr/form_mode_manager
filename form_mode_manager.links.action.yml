@@ -1,4 +1,4 @@
-form_mode_manager.action_links_add:
+form_mode_manager.action:
   class: \Drupal\Core\Menu\LocalActionDefault
   deriver: \Drupal\form_mode_manager\Plugin\Derivative\FormModeManagerLocalAction
   weight: 100

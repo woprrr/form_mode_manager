@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * @file
+ * Contains form_mode_manager_examples.module.
+ */
+
+/**
+ * Implements hook_menu_local_actions_alter().
+ */
+function form_mode_manager_examples_menu_local_actions_alter(&$local_actions) {
+  if (isset($local_actions['form_mode_manager.action:node.contributor'])) {
+    $local_actions['form_mode_manager.action:node.contributor']['appears_on'][] = 'form_mode_manager_examples.front_page';
+  }
+}
