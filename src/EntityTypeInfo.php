@@ -108,21 +108,18 @@ class EntityTypeInfo implements ContainerInjectionInterface {
     $operations = [];
     $entity_type_id = $entity->getEntityTypeId();
     $form_modes = $this->formModeManager->getFormModesByEntity($entity_type_id);
-    $active_form_modes = $this->formModeManager->getActiveDisplaysByBundle($entity_type_id, $entity->bundle());
-    if (isset($active_form_modes[$entity_type_id])
-      && $active_modes = array_intersect_key($form_modes, $active_form_modes[$entity_type_id])
-    ) {
-      foreach ($active_modes as $form_mode_name => $form_mode) {
-        if ($this->currentUser->hasPermission("use {$form_mode['id']} form mode") && $entity->hasLinkTemplate("edit-form.$form_mode_name")) {
-          $operations += [
-            $form_mode_name => [
-              'title' => $this->t('Edit as @form_mode_name', ['@form_mode_name' => $form_mode['label']])
-                ->render(),
-              'url' => $entity->toUrl("edit-form.$form_mode_name"),
-              'weight' => 31,
-            ],
-          ];
-        }
+    foreach ($form_modes as $form_mode_name => $form_mode) {
+      if ($this->formModeManager->isActive($entity_type_id, $entity->bundle(), $form_mode_name)
+        && $this->currentUser->hasPermission("use {$form_mode['id']} form mode")
+      ) {
+        $operations += [
+          $form_mode_name => [
+            'title' => $this->t('Edit as @form_mode_name', ['@form_mode_name' => $form_mode['label']])
+              ->render(),
+            'url' => $entity->toUrl("edit-form.$form_mode_name"),
+            'weight' => 31,
+          ],
+        ];
       }
     }
 
