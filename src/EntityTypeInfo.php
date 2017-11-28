@@ -106,12 +106,9 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    */
   public function entityOperation(EntityInterface $entity) {
     $operations = [];
-    $entity_type_id = $entity->getEntityTypeId();
-    $form_modes = $this->formModeManager->getFormModesByEntity($entity_type_id);
+    $form_modes = $this->formModeManager->getFormModesByEntity($entity->getEntityTypeId());
     foreach ($form_modes as $form_mode_name => $form_mode) {
-      if ($this->formModeManager->isActive($entity_type_id, $entity->bundle(), $form_mode_name)
-        && $this->currentUser->hasPermission("use {$form_mode['id']} form mode")
-      ) {
+      if ($this->grantAccessToFormModeOperation($form_mode, $entity)) {
         $operations += [
           $form_mode_name => [
             'title' => $this->t('Edit as @form_mode_name', ['@form_mode_name' => $form_mode['label']])
@@ -141,15 +138,50 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    * @see EntityListBuilderInterface::getOperations()()
    */
   public function entityOperationAlter(array &$operations, EntityInterface $entity) {
-    // Operation doesn't check permission on base_route,
-    // we need to hide if we don't show it.
-    if (isset($operations['edit'])
-      && !$this->currentUser->hasPermission("use {$entity->getEntityTypeId()}.default form mode")
-    ) {
+    if (empty($this->formModeManager->getFormModesByEntity($entity->getEntityTypeId()))) {
+      return $operations;
+    }
+    elseif ($this->grantAccessToEditOperation($operations, $entity)) {
       unset($operations['edit']);
     }
 
     return $operations;
+  }
+
+  /**
+   * Evaluate if current user has access to "edit" operations.
+   *
+   * @param array $operations
+   *   Operations array as returned by getOperations().
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity on which to define an operation.
+   *
+   * @return bool
+   *   TRUE if user have access to default edit button, if not FALSE.
+   *
+   * @see entityOperationAlter()
+   */
+  public function grantAccessToEditOperation($operations, EntityInterface $entity) {
+    return isset($operations['edit']) && !$this->currentUser->hasPermission("use {$entity->getEntityTypeId()}.default form mode");
+  }
+
+  /**
+   * Evaluate if current user has access to given form mode operations.
+   *
+   * @param array $form_mode
+   *   Current form mode definition.
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity on which to define an operation.
+   *
+   * @return bool
+   *   TRUE if user have access to given form mode, if not FALSE.
+   *
+   * @see entityOperation()
+   */
+  public function grantAccessToFormModeOperation(array $form_mode, EntityInterface $entity) {
+    $form_mode_id = $form_mode['id'];
+    $form_mode_machine_name = $this->formModeManager->getFormModeMachineName($form_mode_id);
+    return $this->formModeManager->isActive($entity->getEntityTypeId(), $entity->bundle(), $form_mode_machine_name) && $this->currentUser->hasPermission("use {$form_mode['id']} form mode");
   }
 
 }
