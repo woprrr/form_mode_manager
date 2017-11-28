@@ -41,11 +41,11 @@ function form_mode_manager_update_8002() {
 /**
  * Exclude from form mode manager configuration the incompatible form modes.
  *
- * add_to_cart are provided by commerce 'order',
+ * Add_to_cart are provided by commerce 'order',
  * and aren't compatible with form mode manager.
  */
 function _form_mode_manager_exclude_commerce_form_mode() {
-  if(\Drupal::moduleHandler()->moduleExists('order')) {
+  if (\Drupal::moduleHandler()->moduleExists('order')) {
     \Drupal::configFactory()->getEditable('form_mode_manager.settings')
       ->set("form_modes.commerce_order_item.to_exclude", ['add_to_cart' => 'add_to_cart'])
       ->save(TRUE);

@@ -61,6 +61,19 @@ interface EntityRoutingMapInterface extends PluginInspectionInterface, Configura
   public function setDefaultFormClass();
 
   /**
+   * Get the edit form class Definition.
+   *
+   * @return string
+   *   The name of entity default form class.
+   */
+  public function getEditFormClass();
+
+  /**
+   * Set the edit form class Definition.
+   */
+  public function setEditFormClass();
+
+  /**
    * Set the target entity type.
    */
   public function setTargetEntityType();

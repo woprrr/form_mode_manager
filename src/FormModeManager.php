@@ -308,8 +308,13 @@ class FormModeManager implements FormModeManagerInterface {
     $entity_type_id = $entity_definition->id();
     /** @var \Drupal\form_mode_manager\EntityRoutingMapBase $route_mapper_plugin */
     $route_mapper_plugin = $this->entityRoutingMap->createInstance($entity_type_id, ['entityTypeId' => $entity_type_id]);
+
     if ($default_form = $entity_definition->getFormClass($route_mapper_plugin->getDefaultFormClass())) {
       $entity_definition->setFormClass($form_mode_name, $default_form);
+    }
+
+    if ($edit_form = $entity_definition->getFormClass($route_mapper_plugin->getEditFormClass())) {
+      $entity_definition->setFormClass('edit_' . $form_mode_name, $edit_form);
     }
   }
 

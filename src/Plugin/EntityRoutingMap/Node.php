@@ -12,6 +12,7 @@ use Drupal\form_mode_manager\EntityRoutingMapBase;
  *   label = @Translation("Node Routes properties"),
  *   targetEntityType = "node",
  *   defaultFormClass = "default",
+ *   editFormClass = "edit",
  *   operations = {
  *     "add_form" = "node.add",
  *     "edit_form" = "entity.node.edit_form",

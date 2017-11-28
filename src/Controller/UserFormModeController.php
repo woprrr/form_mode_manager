@@ -15,7 +15,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 class UserFormModeController extends EntityFormModeBase {
 
   /**
-   * Provides the node submission form.
+   * Provides the entity submission form.
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
@@ -43,8 +43,26 @@ class UserFormModeController extends EntityFormModeBase {
     if ($entity instanceof EntityInterface) {
       return $this->entityFormBuilder->getForm($entity, $operation);
     }
+  }
 
-    throw new \Exception('Invalid entity passed or inexistant form mode');
+  /**
+   * Provides the entity 'edit' form.
+   *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The current route match.
+   *
+   * @return array
+   *   The entity edit Form.
+   */
+  public function entityEdit(RouteMatchInterface $route_match) {
+    /* @var \Drupal\Core\Entity\EntityInterface $entity */
+    $entity = $this->getEntityFromRouteMatch($route_match);
+    $form_mode_id = $this->formModeManager->getFormModeMachineName($route_match->getRouteObject()->getOption('parameters')['form_mode']['id']);
+    $operation = empty($form_mode_id) ? 'register' : 'edit_' . $form_mode_id;
+
+    if ($entity instanceof EntityInterface) {
+      return $this->getForm($entity, $operation);
+    }
   }
 
   /**

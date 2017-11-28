@@ -28,6 +28,13 @@ abstract class EntityRoutingMapBase extends PluginBase implements EntityRoutingM
   protected $defaultFormClass;
 
   /**
+   * Default editing form class Definition name.
+   *
+   * @var string
+   */
+  protected $editFormClass;
+
+  /**
    * Entity type id of entity.
    *
    * @var string
@@ -48,6 +55,7 @@ abstract class EntityRoutingMapBase extends PluginBase implements EntityRoutingM
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->setConfiguration($configuration);
     $this->setDefaultFormClass();
+    $this->setEditFormClass();
     $this->setTargetEntityType();
   }
 
@@ -96,6 +104,13 @@ abstract class EntityRoutingMapBase extends PluginBase implements EntityRoutingM
   /**
    * {@inheritdoc}
    */
+  public function getEditFormClass() {
+    return $this->editFormClass;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function setConfiguration(array $configuration) {
     $configuration += $this->defaultConfiguration();
 
@@ -119,6 +134,13 @@ abstract class EntityRoutingMapBase extends PluginBase implements EntityRoutingM
    */
   public function setDefaultFormClass() {
     $this->defaultFormClass = $this->pluginDefinition['defaultFormClass'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setEditFormClass() {
+    $this->editFormClass = $this->pluginDefinition['editFormClass'];
   }
 
   /**

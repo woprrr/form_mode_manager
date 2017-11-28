@@ -37,11 +37,18 @@ class EntityRoutingMap extends Plugin {
   public $targetEntityType;
 
   /**
-   * Gets the target entity type.
+   * Name of Add EntityForm class.
    *
    * @var string
    */
   public $defaultFormClass = 'default';
+
+  /**
+   * Name of Edit EntityForm class.
+   *
+   * @var string
+   */
+  public $editFormClass = 'edit';
 
   /**
    * A mapping of entity form operation available for that entity.

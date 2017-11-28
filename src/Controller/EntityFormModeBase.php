@@ -9,6 +9,8 @@ use Drupal\Core\Entity\EntityFormBuilderInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormBuilderInterface;
+use Drupal\Core\Form\FormState;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\UrlGeneratorTrait;
@@ -80,6 +82,13 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
   protected $entityRoutingMap;
 
   /**
+   * The form builder.
+   *
+   * @var \Drupal\Core\Form\FormBuilderInterface
+   */
+  protected $formBuilder;
+
+  /**
    * Constructs a EntityFormModeController object.
    *
    * @param \Drupal\Core\Render\RendererInterface $renderer
@@ -94,14 +103,17 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
    *   The entity form builder service.
    * @param \Drupal\form_mode_manager\EntityRoutingMapManager $plugin_routes_manager
    *   Plugin EntityRoutingMap to retrieve entity form operation routes.
+   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   *   The form builder.
    */
-  public function __construct(RendererInterface $renderer, AccountInterface $account, FormModeManagerInterface $form_mode_manager, EntityTypeManagerInterface $entity_manager, EntityFormBuilderInterface $entity_form_builder, EntityRoutingMapManager $plugin_routes_manager) {
+  public function __construct(RendererInterface $renderer, AccountInterface $account, FormModeManagerInterface $form_mode_manager, EntityTypeManagerInterface $entity_manager, EntityFormBuilderInterface $entity_form_builder, EntityRoutingMapManager $plugin_routes_manager, FormBuilderInterface $form_builder) {
     $this->renderer = $renderer;
     $this->account = $account;
     $this->formModeManager = $form_mode_manager;
     $this->entityTypeManager = $entity_manager;
     $this->entityFormBuilder = $entity_form_builder;
     $this->entityRoutingMap = $plugin_routes_manager;
+    $this->formBuilder = $form_builder;
   }
 
   /**
@@ -114,7 +126,8 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
       $container->get('form_mode.manager'),
       $container->get('entity_type.manager'),
       $container->get('entity.form_builder'),
-      $container->get('plugin.manager.entity_routing_map')
+      $container->get('plugin.manager.entity_routing_map'),
+      $container->get('form_builder')
     );
   }
 
@@ -182,15 +195,13 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
   }
 
   /**
-   * Provides the node submission form.
+   * Provides the entity add submission form.
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
    *
    * @return array
-   *   A node submission form.
-   *
-   * @throws \Exception
+   *   The entity add Form.
    */
   public function entityAdd(RouteMatchInterface $route_match) {
     /* @var \Drupal\Core\Entity\EntityInterface $entity */
@@ -211,8 +222,81 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
     if ($entity instanceof EntityInterface) {
       return $this->entityFormBuilder->getForm($entity, $operation);
     }
+  }
 
-    throw new \Exception('Invalide entity passed or inexistant form mode');
+  /**
+   * Provides the entity 'edit' form.
+   *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The current route match.
+   *
+   * @return array
+   *   The entity edit Form.
+   */
+  public function entityEdit(RouteMatchInterface $route_match) {
+    /* @var \Drupal\Core\Entity\EntityInterface $entity */
+    $entity = $this->getEntityFromRouteMatch($route_match);
+    $form_mode_id = $this->formModeManager->getFormModeMachineName($route_match->getRouteObject()->getOption('parameters')['form_mode']['id']);
+    $operation = empty($form_mode_id) ? 'default' : 'edit_' . $form_mode_id;
+
+    if ($entity instanceof EntityInterface) {
+      return $this->getForm($entity, $operation);
+    }
+  }
+
+  /**
+   * Gets the built and processed entity form for the given entity.
+   *
+   * This method are very similar to EntityFormBuilderInterface::getForm,
+   * for this module we need to add two form handler by form mode eg :
+   * form_mode_1 => EntityFormClass
+   * edit_form_mode_1 => EntityFormClass
+   * to provide ability to define different EntityForm class for form,
+   * for add/edit (or others) contexts.
+   * Actually EntityFormBuilderInterface::getForm are designed to only have,
+   * one operation (form mode) by action (add/edit/xxxx).
+   *
+   * In that method we use $operation parameter to retrieve the correct,
+   * FormObject with our context prefixed by 'edit_' or not and in next step we,
+   * set the correct Operation form with only the form mode name,
+   * with ->setOperation() method onto FormObject.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to be created or edited.
+   * @param string $operation
+   *   (optional) The operation identifying the form variation to be returned.
+   *   Defaults to 'default'. This is typically used in routing:.
+   * @param array $form_state_additions
+   *   (optional) An associative array used to build the current state of the
+   *   form. Use this to pass additional information to the form, such as the
+   *   langcode. Defaults to an empty array.
+   *
+   * @return array
+   *   The entity Form.
+   */
+  public function getForm(EntityInterface $entity, $operation = 'default', array $form_state_additions = []) {
+    $form_object = $this->entityTypeManager->getFormObject($entity->getEntityTypeId(), $operation);
+    $form_object->setEntity($entity)
+      ->setOperation($this->getFormModeOperationName($operation));
+
+    $form_state = (new FormState())->setFormState($form_state_additions);
+    return $this->formBuilder->buildForm($form_object, $form_state);
+  }
+
+  /**
+   * Retrieve the operation (form mode) name in edit context.
+   *
+   * In Form Mode Manager all edit routes use a contextual FormClass to provide,
+   * a FormClass handler different by context (add/edit).
+   *
+   * @param string $operation
+   *   The form mode id with contextual prefix.
+   *
+   * @return string
+   *   The form mode id without contextual prefix 'edit_'.
+   */
+  public function getFormModeOperationName($operation) {
+    return preg_replace('/^(edit_)/', '', $operation);
   }
 
   /**
@@ -327,7 +411,8 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
       $bundle_id = !empty($route_match->getParameter($entity_type_id)) ? $route_match->getParameter($entity_type_id)->bundle() : 'user';
     }
 
-    $result = AccessResult::allowedIf($this->formModeManager->isActive($entity_type_id, $bundle_id, $this->formModeManager->getFormModeMachineName($form_mode_id)))->addCacheTags($cache_tags);
+    $operation = $this->getFormModeOperationName($this->formModeManager->getFormModeMachineName($form_mode_id));
+    $result = AccessResult::allowedIf($this->formModeManager->isActive($entity_type_id, $bundle_id, $operation))->addCacheTags($cache_tags);
     if ($entity) {
       $result->addCacheableDependency($entity);
     }

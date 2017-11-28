@@ -12,6 +12,7 @@ use Drupal\form_mode_manager\EntityRoutingMapBase;
  *   label = @Translation("User Routes properties"),
  *   targetEntityType = "user",
  *   defaultFormClass = "register",
+ *   editFormClass = "default",
  *   operations = {
  *     "add_form" = "user.register",
  *     "edit_form" = "entity.user.edit_form",

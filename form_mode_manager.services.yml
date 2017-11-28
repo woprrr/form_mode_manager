@@ -1,7 +1,17 @@
 services:
   form_mode_manager.route_subscriber:
-    class: Drupal\form_mode_manager\Routing\RouteSubscriber
+    class: Drupal\form_mode_manager\Routing\EventSubscriber\FormModesSubscriber
     arguments: ['@entity_type.manager', '@entity_display.repository', '@form_mode.manager', '@plugin.manager.entity_routing_map']
+    tags:
+      - { name: event_subscriber }
+  form_mode_manager.user_route_subscriber:
+    class: Drupal\form_mode_manager\Routing\EventSubscriber\UserFormModesSubscriber
+    arguments: ['@entity_type.manager', '@entity_display.repository', '@form_mode.manager', '@plugin.manager.entity_routing_map']
+    tags:
+      - { name: event_subscriber }
+  form_mode_manager.default_routes_subscriber:
+    class: Drupal\form_mode_manager\Routing\EventSubscriber\DefaultRouteSubscriber
+    arguments: ['@entity_type.manager', '@form_mode.manager', '@plugin.manager.entity_routing_map']
     tags:
       - { name: event_subscriber }
   form_mode_manager.param_converter:
