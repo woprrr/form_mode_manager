@@ -74,7 +74,7 @@ function form_mode_manager_theme() {
  */
 function template_preprocess_form_mode_manager_add_list(array &$variables) {
   $variables['types'] = [];
-  $entity_type_id = $variables['entity_type']->id();
+  $entity_type_id = $variables['entity_type'];
   /** @var \Drupal\form_mode_manager\EntityRoutingMapBase $entity_operation_mapping */
   $entity_operation_mapping = \Drupal::service("plugin.manager.entity_routing_map")
     ->createInstance($entity_type_id, ['entityTypeId' => $entity_type_id]);

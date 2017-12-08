@@ -166,6 +166,8 @@ class FormModesSubscriber extends RouteSubscriberBase {
   public function getFormModeListPageRoute(EntityTypeInterface $entity_type, array $form_mode) {
     $route = NULL;
     $entity_type_id = $entity_type->id();
+    $entity_type_bundle_id = $entity_type->getBundleEntityType();
+    $bundle_entity_type_id = !empty($entity_type_bundle_id) ? $entity_type_bundle_id : $entity_type_id;
     $has_active_mode = $this->formModeManager->hasActiveFormMode(
       $entity_type_id,
       $this->formModeManager->getFormModeMachineName($form_mode['id'])
@@ -178,13 +180,14 @@ class FormModesSubscriber extends RouteSubscriberBase {
           '_controller' => static::FORM_MODE_DEFAULT_CONTROLLER . '::addPage',
           '_title' => $this->t('Add @entity_type', ['@entity_type' => $entity_type->getLabel()])
             ->render(),
-          'entity_type' => $entity_type,
           'form_mode_name' => $this->formModeManager->getFormModeMachineName($form_mode['id']),
         ])
         ->addRequirements([
           '_permission' => "use {$form_mode['id']} form mode",
         ])
         ->setOptions([
+          '_form_mode_manager_entity_type_id' => $entity_type_id,
+          '_form_mode_manager_bundle_entity_type_id' => $bundle_entity_type_id,
           '_admin_route' => TRUE,
         ]);
       $this->userListEnhancements($route, $entity_type->id());

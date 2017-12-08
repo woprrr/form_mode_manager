@@ -130,17 +130,10 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
       $container->get('form_builder')
     );
   }
-
   /**
    * Displays add content links for available entity types.
    *
    * Redirects to entity/add/[bundle] if only one content type is available.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition. Useful when a single class is,
-   *   used for multiple, possibly dynamic entity types.
-   * @param string $form_mode_name
-   *   The operation name identifying the form variation (form_mode).
    *
    * @return array|\Symfony\Component\HttpFoundation\RedirectResponse
    *   A render array for a list of the entity types that can be added; however,
@@ -148,19 +141,21 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
    *   will return a RedirectResponse to the entity add page for that one entity
    *   type.
    */
-  public function addPage(EntityTypeInterface $entity_type, $form_mode_name) {
-    $entity_type_name = $entity_type->getBundleEntityType();
-    $entity_type_id = $entity_type->id();
+  public function addPage(RouteMatchInterface $route_match) {
+    $entity_type_id = $route_match->getRouteObject()->getOption('_form_mode_manager_entity_type_id');
+    $entity_bundle_name = $route_match->getRouteObject()->getOption('_form_mode_manager_bundle_entity_type_id');
+    $form_mode_name = $route_match->getRouteObject()->getDefault('form_mode_name');
+
     $entity_type_cache_tags = $this->entityTypeManager
-      ->getDefinition($entity_type_name)
+      ->getDefinition($entity_bundle_name)
       ->getListCacheTags();
     $entity_type_definitions = $this->entityTypeManager
-      ->getStorage($entity_type_name)
+      ->getStorage($entity_bundle_name)
       ->loadMultiple();
 
     $build = [
       '#theme' => 'form_mode_manager_add_list',
-      '#entity_type' => $entity_type,
+      '#entity_type' => $entity_type_id,
       '#cache' => [
         'tags' => Cache::mergeTags($entity_type_cache_tags, $this->formModeManager->getListCacheTags()),
       ],
@@ -184,7 +179,7 @@ abstract class EntityFormModeBase implements ContainerInjectionInterface {
       $bundle = array_shift($content);
       $entity_routes_infos = $this->entityRoutingMap->createInstance($entity_type_id, ['entityTypeId' => $entity_type_id])->getPluginDefinition();
       return $this->redirect($entity_routes_infos['operations']['add_form'] . ".$form_mode_name", [
-        $entity_type_name => $bundle->id(),
+        $entity_bundle_name => $bundle->id(),
       ]);
     }
 
