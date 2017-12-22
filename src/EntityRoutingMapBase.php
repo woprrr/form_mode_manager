@@ -9,6 +9,14 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Base class for form mode manager entity routing plugin.
+ *
+ * This plugin are used to abstract the concepts implemented by EntityPlugin.
+ * In Entity API we have possibilitity to linked entity form 'handlers' to a,
+ * specific FormClass, but the operation name and routes linked with her are,
+ * very arbitrary and unpredictable specially in custom entities cases.
+ * In that plugin you have the possibility to map operation and,
+ * others useful information about entity to reduce complexity of,
+ * retrieving each possible cases.
  */
 abstract class EntityRoutingMapBase extends PluginBase implements EntityRoutingMapInterface, ContainerFactoryPluginInterface {
   use StringTranslationTrait;
@@ -72,6 +80,9 @@ abstract class EntityRoutingMapBase extends PluginBase implements EntityRoutingM
 
   /**
    * {@inheritdoc}
+   *
+   * @param string $operation_name
+   *   The name of needed operation to retrieve.
    */
   public function getOperation($operation_name) {
     if (isset($this->pluginDefinition['operations'][$operation_name])) {

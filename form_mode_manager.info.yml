@@ -4,5 +4,5 @@ type: module
 core: 8.x
 configure: form_mode_manager.admin_settings
 dependencies:
-  - field
-  - field_ui
+  - drupal:field
+  - drupal:field_ui

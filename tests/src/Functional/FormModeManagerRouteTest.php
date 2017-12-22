@@ -169,7 +169,7 @@ class FormModeManagerRouteTest extends FormModeManagerBase {
     $this->drupalLogin($this->adminUser);
     $node_form_mode_id = $this->formModeManager->getFormModeMachineName($this->nodeFormMode->id());
     $this->drupalGet("node/add-list/$node_form_mode_id");
-    $this->assertSession()->titleEquals("Create {$this->nodeTypeFmm1->label()} as {$this->nodeFormMode->label()} | Drupal");
+    $this->assertSession()->titleEquals("Create {$this->nodeTypeFmm1->id()} as {$this->nodeFormMode->label()} | Drupal");
     $this->assertSession()->statusCodeEquals(200);
 
     // List form mode for anonymous.

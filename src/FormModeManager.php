@@ -91,7 +91,7 @@ class FormModeManager implements FormModeManagerInterface {
     $ids = $this->configFactory->listAll($config_prefix . '.' . $entity_type_id . '.');
     foreach ($ids as $id) {
       $config_id = str_replace($config_prefix . '.', '', $id);
-      list(, , $form_mode_name) = explode('.', $config_id);
+      list(,, $form_mode_name) = explode('.', $config_id);
       if ($form_mode_name != 'default') {
         $load_ids[] = $config_id;
       }
@@ -226,6 +226,7 @@ class FormModeManager implements FormModeManagerInterface {
    * {@inheritdoc}
    */
   public function isActive($entity_type_id, $bundle_id, $form_mode_machine_name) {
+    $bundle_id = isset($bundle_id) ? $bundle_id : $entity_type_id;
     $form_mode_active = array_keys($this->entityDisplayRepository->getFormModeOptionsByBundle($entity_type_id, $bundle_id));
     return in_array($form_mode_machine_name, $form_mode_active);
   }

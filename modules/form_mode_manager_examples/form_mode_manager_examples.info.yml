@@ -3,9 +3,9 @@ type: module
 description: Form Mode Manager allows to use form_mode implement on Drupal 8 on each Entity.
 core: 8.x
 dependencies:
-  - node
-  - image
-  - user
-  - form_mode_manager
+  - drupal:node
+  - drupal:image
+  - drupal:user
+  - drupal:form_mode_manager
 theme:
   - bartik

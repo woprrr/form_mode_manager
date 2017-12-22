@@ -161,7 +161,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    *
    * @see entityOperationAlter()
    */
-  public function grantAccessToEditOperation($operations, EntityInterface $entity) {
+  public function grantAccessToEditOperation(array $operations, EntityInterface $entity) {
     return isset($operations['edit']) && !$this->currentUser->hasPermission("use {$entity->getEntityTypeId()}.default form mode");
   }
 

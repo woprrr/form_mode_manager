@@ -135,7 +135,7 @@ interface FormModeManagerInterface {
    * @param string $entity_type_id
    *   The entity type id.
    * @param string $bundle_id
-   *   Name of bundle for current entity.
+   *   (Optional) Name of bundle for current entity.
    * @param string $form_mode_machine_name
    *   Machine name of form mode.
    *

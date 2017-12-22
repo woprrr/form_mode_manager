@@ -31,7 +31,7 @@ class FormModesSubscriber extends RouteSubscriberBase {
    *
    * @var string
    */
-  const FORM_MODE_DEFAULT_CONTROLLER = '\Drupal\form_mode_manager\Controller\EntityFormModeController';
+  const FORM_MODE_DEFAULT_CONTROLLER = '\Drupal\form_mode_manager\Controller\FormModeManagerEntityController';
 
   /**
    * The entity type manager service.
@@ -85,7 +85,6 @@ class FormModesSubscriber extends RouteSubscriberBase {
    */
   protected function alterRoutes(RouteCollection $collection) {
     $form_modes_definitions = $this->formModeManager->getAllFormModesDefinitions();
-    unset($form_modes_definitions['user']);
     foreach ($form_modes_definitions as $entity_type_id => $form_modes) {
       $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
       $this->addFormModesRoutes($collection, $entity_type, $form_modes);
@@ -107,7 +106,9 @@ class FormModesSubscriber extends RouteSubscriberBase {
       $this->setFormModeCollection($collection, $entity_type, $form_mode, 'admin_add');
       $this->setFormModeCollection($collection, $entity_type, $form_mode, 'add_form');
       $this->setFormModeCollection($collection, $entity_type, $form_mode, 'edit_form');
-      $this->setAddPageCollection($collection, $entity_type, $form_mode);
+      if (!empty($entity_type->getKey('bundle'))) {
+        $this->setAddPageCollection($collection, $entity_type, $form_mode);
+      }
     }
   }
 
@@ -178,7 +179,7 @@ class FormModesSubscriber extends RouteSubscriberBase {
       $route
         ->addDefaults([
           '_controller' => static::FORM_MODE_DEFAULT_CONTROLLER . '::addPage',
-          '_title' => $this->t('Add @entity_type', ['@entity_type' => $entity_type->getLabel()])
+          '_title' => $this->t('Add @entity_type as @form_mode_label', ['@entity_type' => $entity_type->getLabel(), '@form_mode_label' => $form_mode['label']])
             ->render(),
           'form_mode_name' => $this->formModeManager->getFormModeMachineName($form_mode['id']),
         ])
@@ -324,19 +325,21 @@ class FormModesSubscriber extends RouteSubscriberBase {
    */
   protected function getFormModeRouteOptions(array $form_mode, EntityTypeInterface $entity_type) {
     $entity_type_id = $entity_type->id();
-    $entity_type_bundle_id = $entity_type->getBundleEntityType();
-    $bundle_entity_type_id = !empty($entity_type_bundle_id) ? $entity_type_bundle_id : $entity_type_id;
-
-    return [
+    $route_definition = [
       '_form_mode_manager_entity_type_id' => $entity_type_id,
-      '_form_mode_manager_bundle_entity_type_id' => $bundle_entity_type_id,
       'parameters' => [
         $entity_type_id => [
           'type' => "entity:$entity_type_id",
         ],
-        'form_mode' => $form_mode,
+        'form_mode' => $form_mode + ['type' => NULL],
       ],
     ];
+
+    if (!empty($entity_type->getKey('bundle'))) {
+      $route_definition['_form_mode_manager_bundle_entity_type_id'] = $entity_type->getBundleEntityType();
+    }
+
+    return $route_definition;
   }
 
   /**

@@ -6,8 +6,6 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Link;
-use Drupal\Core\Url;
 use Drupal\form_mode_manager\EntityTypeInfo;
 
 /**
@@ -44,51 +42,4 @@ function form_mode_manager_entity_operation_alter(array &$operations, EntityInte
   return \Drupal::service('class_resolver')
     ->getInstanceFromDefinition(EntityTypeInfo::class)
     ->entityOperationAlter($operations, $entity);
-}
-
-/**
- * Implements hook_theme().
- */
-function form_mode_manager_theme() {
-  return [
-    'form_mode_manager_add_list' => [
-      'variables' => [
-        'content' => NULL,
-        'form_mode' => NULL,
-        'entity_type' => NULL,
-      ],
-    ],
-  ];
-}
-
-/**
- * Prepares variables for list of available entity type templates.
- *
- * Default template: form-mode-manager-add-list.html.twig.
- *
- * @param array $variables
- *   An associative array containing:
- *   - content: An array of content types.
- *
- * @see \Drupal\form_mode_manager\Controller\EntityFormModeController::addPage()
- */
-function template_preprocess_form_mode_manager_add_list(array &$variables) {
-  $variables['types'] = [];
-  $entity_type_id = $variables['entity_type'];
-  /** @var \Drupal\form_mode_manager\EntityRoutingMapBase $entity_operation_mapping */
-  $entity_operation_mapping = \Drupal::service("plugin.manager.entity_routing_map")
-    ->createInstance($entity_type_id, ['entityTypeId' => $entity_type_id]);
-  if (!empty($variables['content'])) {
-    /** @var \Drupal\Core\Config\Entity\ConfigEntityBundleBase $type */
-    foreach ($variables['content'] as $type) {
-      $route_name = $entity_operation_mapping->getOperation('add_form') . ".{$variables['form_mode']}";
-      $variables['types'][$type->id()] = [
-        'type' => $type->id(),
-        'add_link' => Link::fromTextAndUrl($type->label(), new Url($route_name, [$type->getEntityTypeId() => $type->id()])),
-        'description' => [
-          '#markup' => (method_exists($type, 'getDescription')) ? $type->getDescription() : $type->label(),
-        ],
-      ];
-    }
-  }
 }

@@ -112,7 +112,7 @@ class FormModeManagerUiTest extends FormModeManagerBase {
     $this->drupalLogin($this->adminUser);
     $this->drupalGet('admin/content');
     $this->assertSession()
-      ->linkExists("Add node as {$this->nodeFormMode->label()}");
+      ->linkExists("Add content as {$this->nodeFormMode->label()}");
     $this->assertSession()
       ->linkExists("Edit as {$this->nodeFormMode->label()}");
   }

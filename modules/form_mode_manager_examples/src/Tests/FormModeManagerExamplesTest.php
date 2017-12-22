@@ -56,7 +56,7 @@ class FormModeManagerExamplesTest extends BrowserTestBase {
     // Add test for form mode manager actions.
     $this->drupalLogin($this->rootUser);
     $this->drupalGet('');
-    $this->assertSession()->linkExists('Add node as Contributor');
+    $this->assertSession()->linkExists('Add content as Contributor');
   }
 
 }
