@@ -1,17 +1,22 @@
 services:
+  # Form Mode Manager.
+  form_mode.manager:
+    class: Drupal\form_mode_manager\FormModeManager
+    arguments: ['@entity_type.manager', '@config.factory', '@entity_display.repository', '@entity_type.bundle.info', '@plugin.manager.entity_routing_map']
+
+  # Route Subscribers.
   form_mode_manager.route_subscriber:
     class: Drupal\form_mode_manager\Routing\EventSubscriber\FormModesSubscriber
     arguments: ['@entity_type.manager', '@entity_display.repository', '@form_mode.manager', '@plugin.manager.entity_routing_map']
     tags:
       - { name: event_subscriber }
   form_mode_manager.default_routes_subscriber:
-    class: Drupal\form_mode_manager\Routing\EventSubscriber\DefaultRouteSubscriber
+    class: Drupal\form_mode_manager\Routing\EventSubscriber\EnhanceEntityRouteSubscriber
     arguments: ['@entity_type.manager', '@form_mode.manager', '@plugin.manager.entity_routing_map']
     tags:
       - { name: event_subscriber }
-  form_mode.manager:
-    class: Drupal\form_mode_manager\FormModeManager
-    arguments: ['@entity_type.manager', '@config.factory', '@entity_display.repository', '@entity_type.bundle.info', '@plugin.manager.entity_routing_map']
+
+  # Entity Routing Map plugin.
   plugin.manager.entity_routing_map:
     class: Drupal\form_mode_manager\EntityRoutingMapManager
     parent: default_plugin_manager

@@ -24,6 +24,9 @@ class FormModeManagerExamplesTest extends BrowserTestBase {
     'node',
     'block',
     'block_content',
+    'media',
+    'taxonomy',
+    'form_mode_manager',
   ];
 
   /**
@@ -47,6 +50,8 @@ class FormModeManagerExamplesTest extends BrowserTestBase {
    */
   public function testInstalled() {
     $this->drupalGet('');
+    $this->assertSession()->statusCodeEquals(200);
+
     $this->assertSession()->titleEquals('Form Mode Manager examples | Drupal');
     $this->assertSession()->pageTextContains('Form Mode Manager examples');
     $this->assertSession()->pageTextContains('Welcome to Form Mode Manager example.');

@@ -178,7 +178,9 @@ abstract class AbstractEntityFormModesFactory implements EntityFormModeManagerIn
 
   /**
    * {@inheritdoc}
+   *
    * @return string
+   *   The bundle entity type id or entity type id of entity.
    */
   public function getBundleEntityTypeId(EntityInterface $entity, RouteMatchInterface $route_match) {
     $route = $route_match->getRouteObject();
@@ -195,7 +197,6 @@ abstract class AbstractEntityFormModesFactory implements EntityFormModeManagerIn
    * {@inheritdoc}
    */
   public function entityAdd(RouteMatchInterface $route_match) {
-    //
     $entity = $this->getEntity($route_match);
     $operation = $this->getOperation($route_match, $entity->getEntityTypeId());
 

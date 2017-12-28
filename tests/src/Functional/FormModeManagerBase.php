@@ -20,6 +20,8 @@ abstract class FormModeManagerBase extends BrowserTestBase {
    */
   public static $modules = [
     'block',
+    'block_content',
+    'media',
     'entity_test',
     'field_ui',
     'node',

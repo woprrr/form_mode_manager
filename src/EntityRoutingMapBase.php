@@ -11,7 +11,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  * Base class for form mode manager entity routing plugin.
  *
  * This plugin are used to abstract the concepts implemented by EntityPlugin.
- * In Entity API we have possibilitity to linked entity form 'handlers' to a,
+ * In Entity API we have possibility to linked entity form 'handlers' to a,
  * specific FormClass, but the operation name and routes linked with her are,
  * very arbitrary and unpredictable specially in custom entities cases.
  * In that plugin you have the possibility to map operation and,
@@ -19,6 +19,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  * retrieving each possible cases.
  */
 abstract class EntityRoutingMapBase extends PluginBase implements EntityRoutingMapInterface, ContainerFactoryPluginInterface {
+
   use StringTranslationTrait;
 
   /**
@@ -50,6 +51,13 @@ abstract class EntityRoutingMapBase extends PluginBase implements EntityRoutingM
   protected $targetEntityType;
 
   /**
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs display plugin.
    *
    * @param array $configuration
@@ -61,10 +69,10 @@ abstract class EntityRoutingMapBase extends PluginBase implements EntityRoutingM
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->setTargetEntityType();
     $this->setConfiguration($configuration);
     $this->setDefaultFormClass();
     $this->setEditFormClass();
-    $this->setTargetEntityType();
   }
 
   /**
@@ -151,7 +159,27 @@ abstract class EntityRoutingMapBase extends PluginBase implements EntityRoutingM
    * {@inheritdoc}
    */
   public function setEditFormClass() {
-    $this->editFormClass = $this->pluginDefinition['editFormClass'];
+    $edit_form_operation = $this->pluginDefinition['editFormClass'];
+
+    if (!$this->entityFormClassExist($edit_form_operation)) {
+      $edit_form_operation = $this->getDefaultFormClass();
+    }
+
+    $this->editFormClass = $edit_form_operation;
+  }
+
+  /**
+   * Check if the entity have an edit operation handler.
+   *
+   * @param string $operation_name
+   *   The name of form handler operation.
+   *
+   * @return bool
+   *   True if generic `edit` form handler exist for this entity.
+   */
+  public function entityFormClassExist($operation_name) {
+    $entity_definition = \Drupal::entityTypeManager()->getDefinition($this->getTargetEntityType());
+    return !empty($entity_definition->getFormClass($operation_name));
   }
 
   /**

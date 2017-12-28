@@ -17,16 +17,13 @@ php:
   - 5.5
   - 5.6
   - 7
-  - hhvm
 
 matrix:
   fast_finish: true
-  allow_failures:
-    - php: hhvm
 
 branches:
   only:
-    - "8.x-1.x"
+    - "8.x-2.x"
 
 env:
   global:
@@ -49,6 +46,8 @@ env:
     # Drupal specific variables.
     - DRUPAL_TI_DB="drupal_travis_db"
     - DRUPAL_TI_DB_URL="mysql://root:@127.0.0.1/drupal_travis_db"
+    - DRUPAL_TI_CORE_BRANCH="8.5.x"
+
     # Note: Do not add a trailing slash here.
     - DRUPAL_TI_WEBSERVER_URL="http://127.0.0.1"
     - DRUPAL_TI_WEBSERVER_PORT="8080"
@@ -58,15 +57,15 @@ env:
 
     # === Behat specific variables.
     # This is relative to $TRAVIS_BUILD_DIR
-    - DRUPAL_TI_BEHAT_DIR="./tests/behat"
+    # - DRUPAL_TI_BEHAT_DIR="./tests/behat"
     # These arguments are passed to the bin/behat command.
-    - DRUPAL_TI_BEHAT_ARGS=""
+    # - DRUPAL_TI_BEHAT_ARGS=""
     # Specify the filename of the behat.yml with the $DRUPAL_TI_DRUPAL_DIR variables.
-    - DRUPAL_TI_BEHAT_YML="behat.yml.dist"
+    # - DRUPAL_TI_BEHAT_YML="behat.yml.dist"
     # This is used to setup Xvfb.
-    - DRUPAL_TI_BEHAT_SCREENSIZE_COLOR="1280x1024x16"
+    # - DRUPAL_TI_BEHAT_SCREENSIZE_COLOR="1280x1024x16"
     # The version of seleniumthat should be used.
-    - DRUPAL_TI_BEHAT_SELENIUM_VERSION="2.44"
+    # - DRUPAL_TI_BEHAT_SELENIUM_VERSION="2.44"
 
     # PHPUnit specific commandline arguments.
     - DRUPAL_TI_PHPUNIT_ARGS=""
@@ -85,9 +84,10 @@ env:
   matrix:
     # [[[ SELECT ANY OR MORE OPTIONS ]]]
     #- DRUPAL_TI_RUNNERS="phpunit"
-    - DRUPAL_TI_RUNNERS="simpletest"
+    #- DRUPAL_TI_RUNNERS="simpletest"
     #- DRUPAL_TI_RUNNERS="behat"
     #- DRUPAL_TI_RUNNERS="phpunit simpletest behat"
+    - DRUPAL_TI_RUNNERS="phpunit-core"
 
 mysql:
   database: drupal_travis_db
@@ -99,19 +99,19 @@ before_install:
   - composer global require "lionsad/drupal_ti:1.*"
   - drupal-ti before_install
   # Codesniffer and Coder
-  - composer global require "squizlabs/php_codesniffer:2.0.*@dev"
-  - composer global require drupal/coder:8.2.0-beta1
+  - composer global require drupal/coder
   - ln -s ~/.composer/vendor/drupal/coder/coder_sniffer/Drupal ~/.composer/vendor/squizlabs/php_codesniffer/CodeSniffer/Standards/
 
 install:
   - drupal-ti install
 
 before_script:
+  - drupal-ti --include drupal_ti/.travis-before_script.sh
   - drupal-ti before_script
 
 script:
-  - drupal-ti --include .travis-phpcs.sh
-  - drupal-ti script
+  - drupal-ti --include drupal_ti/.travis-phpcs.sh
+  - export SIMPLETEST_DB=mysql://root:@127.0.0.1/drupal_travis_db; drupal-ti script
 
 after_script:
   - drupal-ti after_script

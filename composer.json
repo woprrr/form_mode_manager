@@ -1,6 +1,6 @@
 {
   "name": "drupal/form_mode_manager",
-  "description": "Allow use of form mode in all Content entities",
+  "description": "Provide an API to use Form modes",
   "type": "drupal-module",
   "homepage": "https://www.drupal.org/project/image_widget_crop",
   "keywords": ["Drupal", "Drupal Display modes", "Form modes", "Field Ui"],

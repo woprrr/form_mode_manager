@@ -1,3 +1,4 @@
+# Form Mode Manager UI routes
 form_mode_manager.admin_settings:
   path: '/admin/config/content/form_mode_manager'
   defaults:
