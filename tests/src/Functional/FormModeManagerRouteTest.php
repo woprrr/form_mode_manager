@@ -20,6 +20,8 @@ class FormModeManagerRouteTest extends FormModeManagerBase {
 
   /**
    * Asserts that anon had access to a specific form mode, create and edit node.
+   *
+   * @throws \Behat\Mink\Exception\ExpectationException
    */
   public function testAnonymousSpecificFormModeManagerRoutes() {
     $node_form_mode_id = $this->formModeManager->getFormModeMachineName($this->nodeFormMode->id());
@@ -56,6 +58,8 @@ class FormModeManagerRouteTest extends FormModeManagerBase {
 
   /**
    * Asserts Add Form Mode Manager routes exists.
+   *
+   * @throws \Behat\Mink\Exception\ExpectationException
    */
   public function testAddFormModeManagerRoutes() {
     $node_form_mode_id = $this->formModeManager->getFormModeMachineName($this->nodeFormMode->id());
@@ -96,6 +100,8 @@ class FormModeManagerRouteTest extends FormModeManagerBase {
 
   /**
    * Asserts Edit Form Mode Manager routes exists.
+   *
+   * @throws \Behat\Mink\Exception\ExpectationException
    */
   public function testEditFormModeManagerRoutes() {
     $this->drupalLogin($this->adminUser);
@@ -132,6 +138,8 @@ class FormModeManagerRouteTest extends FormModeManagerBase {
 
   /**
    * Asserts User Edit Form Mode Manager routes exists.
+   *
+   * @throws \Behat\Mink\Exception\ExpectationException
    */
   public function testUserEditFormModeManagerRoutes() {
     $this->drupalLogin($this->adminUser);
@@ -164,6 +172,8 @@ class FormModeManagerRouteTest extends FormModeManagerBase {
 
   /**
    * Asserts List With One Form Mode Manager routes exists.
+   *
+   * @throws \Behat\Mink\Exception\ExpectationException
    */
   public function testListWithOneFormModeManagerRoutes() {
     $this->drupalLogin($this->adminUser);
@@ -185,6 +195,8 @@ class FormModeManagerRouteTest extends FormModeManagerBase {
 
   /**
    * Asserts List With Two Form Mode Manager routes exists.
+   *
+   * @throws \Behat\Mink\Exception\ExpectationException
    */
   public function testListWithTwoFormModeManagerRoutes() {
     $node_form_mode_id = $this->formModeManager->getFormModeMachineName($this->nodeFormMode->id());
