@@ -73,6 +73,7 @@ abstract class EntityRoutingMapBase extends PluginBase implements EntityRoutingM
     $this->setConfiguration($configuration);
     $this->setDefaultFormClass();
     $this->setEditFormClass();
+    $this->setContextualLinks();
   }
 
   /**
@@ -130,6 +131,23 @@ abstract class EntityRoutingMapBase extends PluginBase implements EntityRoutingM
   /**
    * {@inheritdoc}
    */
+  public function getContextualLinks() {
+    return $this->pluginDefinition['contextualLinks'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContextualLink($operation_name) {
+    if (isset($this->pluginDefinition['contextualLinks'][$operation_name])) {
+      return $this->pluginDefinition['contextualLinks'][$operation_name];
+    }
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function setConfiguration(array $configuration) {
     $configuration += $this->defaultConfiguration();
 
@@ -169,6 +187,19 @@ abstract class EntityRoutingMapBase extends PluginBase implements EntityRoutingM
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function setContextualLinks() {
+    if (!isset($this->pluginDefinition['contextualLinks']['edit'])) {
+      $operations = [
+        'edit' => "entity.{$this->targetEntityType}.edit_form",
+      ];
+
+      $this->pluginDefinition['contextualLinks'] += $operations;
+    }
+  }
+
+  /**
    * Check if the entity have an edit operation handler.
    *
    * @param string $operation_name
@@ -178,7 +209,8 @@ abstract class EntityRoutingMapBase extends PluginBase implements EntityRoutingM
    *   True if generic `edit` form handler exist for this entity.
    */
   public function entityFormClassExist($operation_name) {
-    $entity_definition = \Drupal::entityTypeManager()->getDefinition($this->getTargetEntityType());
+    $entity_definition = \Drupal::entityTypeManager()
+      ->getDefinition($this->getTargetEntityType());
     return !empty($entity_definition->getFormClass($operation_name));
   }
 

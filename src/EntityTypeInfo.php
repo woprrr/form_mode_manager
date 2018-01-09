@@ -135,7 +135,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    *   An array of operation definitions.
    *
    * @see hook_entity_operation_alter()
-   * @see EntityListBuilderInterface::getOperations()()
+   * @see EntityListBuilderInterface::getOperations()
    */
   public function entityOperationAlter(array &$operations, EntityInterface $entity) {
     if (empty($this->formModeManager->getFormModesByEntity($entity->getEntityTypeId()))) {

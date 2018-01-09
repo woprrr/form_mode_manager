@@ -181,8 +181,6 @@ abstract class FormModeManagerBase extends BrowserTestBase {
   /**
    * Creates a custom block type (bundle).
    *
-   * @param string $label
-   *   The block type label.
    * @param bool $create_body
    *   Whether or not to create the body field.
    *

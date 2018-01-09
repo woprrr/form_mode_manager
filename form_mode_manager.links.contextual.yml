@@ -1,0 +1,3 @@
+# Form Mode Manager derives Contextual links.
+form_mode_manager.edit_form:
+  deriver: 'Drupal\form_mode_manager\Plugin\Derivative\FormModeManagerContextualLinks'

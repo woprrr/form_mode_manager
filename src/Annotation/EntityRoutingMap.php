@@ -57,4 +57,11 @@ class EntityRoutingMap extends Plugin {
    */
   public $operations = [];
 
+  /**
+   * A mapping of entity contextual links available for that entity.
+   *
+   * @var array[]
+   */
+  public $contextualLinks = [];
+
 }
