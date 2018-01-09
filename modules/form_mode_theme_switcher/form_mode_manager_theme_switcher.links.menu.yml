@@ -1,0 +1,7 @@
+# Admin UI - Theme switcher
+form_mode_manager.theme_switcher_settings:
+  title: 'Form Mode theme switcher'
+  description: 'xxx'
+  weight: -10
+  parent: form_mode_manager.admin_settings
+  route_name: form_mode_manager.theme_switcher_settings

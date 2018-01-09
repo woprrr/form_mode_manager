@@ -1,0 +1,10 @@
+# Settings route.
+form_mode_manager.theme_switcher_settings:
+  path: '/admin/config/content/form_mode_manager/theme-switcher'
+  defaults:
+    _form: 'Drupal\form_mode_manager_theme_switcher\Form\FormModeThemeSwitcherForm'
+    _title: 'Form Mode Manager theme switcher settings'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE

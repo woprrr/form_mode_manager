@@ -273,6 +273,7 @@ class FormModesSubscriber extends RouteSubscriberBase {
     $entity_type_id = $entity_definition->id();
     $route_definition = [
       '_form_mode_manager_entity_type_id' => $entity_type_id,
+      'form_mode_theme' => NULL,
       'parameters' => [
         $entity_type_id => [
           'type' => "entity:$entity_type_id",

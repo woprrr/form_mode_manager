@@ -1,0 +1,23 @@
+# Schema for configuration files of Form Mode Manager Theme Switcher module.
+form_mode.theme_switcher:
+  type: config_object
+  label: 'Form Mode Theme Switcher configuration object.'
+  mapping:
+    type:
+      type: sequence
+      label: 'The kind of theme type choose by admin.'
+      sequence:
+        type: form_mode_manager_theme_switcher.[type]
+    form_mode:
+      type: sequence
+      label: 'Specific active theme.'
+      sequence:
+        type: form_mode_manager_theme_switcher.[type]
+
+form_mode_manager_theme_switcher.type:
+  type: string
+  label: 'Name of theme configuration or custom if specific theme is needed.'
+
+form_mode_manager_theme_switcher.form_mode:
+  type: string
+  label: 'Name of specific theme to display if _custom type is set.'

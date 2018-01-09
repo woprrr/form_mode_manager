@@ -107,6 +107,7 @@ class EnhanceEntityRouteSubscriber extends RouteSubscriberBase {
     $entity_add_page = $this->entityRoutingDefinition->getOperation($operation_name);
     if ($entity_add_page && $route = $this->routeCollection->get($entity_add_page)) {
       $route->setRequirement('_permission', "use {$this->entityDefinition->id()}.default form mode");
+      $route->setOption('form_mode_theme', NULL);
       $this->routeCollection->add($entity_add_page, $route);
     }
   }

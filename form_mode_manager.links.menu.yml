@@ -1,5 +1,14 @@
+# Admin UI - Settings links.
 form_mode_manager.admin_settings:
-  title: 'Form Mode Manager settings'
+  title: 'Form Mode Manager'
   description: 'Configure common settings for Display modes.'
   parent: system.admin_config_content
   route_name: form_mode_manager.admin_settings
+
+# Admin UI - Local tasks
+form_mode_manager.admin_settings_links_task:
+  title: 'Local task settings'
+  description: 'xxx'
+  weight: -10
+  parent: form_mode_manager.admin_settings
+  route_name: form_mode_manager.admin_settings_links_task

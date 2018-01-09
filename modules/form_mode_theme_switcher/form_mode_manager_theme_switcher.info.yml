@@ -1,0 +1,9 @@
+name: Form Mode Manager Theme Switcher
+type: module
+description: Allows to define theme applicable per form_mode using form mode manager.
+core: 8.x
+configure: form_mode_manager.theme_switcher_settings
+dependencies:
+  - drupal:field
+  - drupal:field_ui
+  - drupal:form_mode_manager
